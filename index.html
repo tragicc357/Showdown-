@@ -227,7 +227,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
         <div class="field"><span class="label">Shoes</span><div class="chips" id="oSh"></div></div>
         <div class="field"><span class="label">Headphones</span><div class="chips" id="oHp"></div></div>
         <div class="field"><span class="label">Backpack</span><div class="chips" id="oBp"></div></div>
-        <div class="field"><span class="label">In your hand · win plush prizes in the Prize Claw to carry them</span><div class="chips" id="oIt"></div></div>
+        <div class="field"><span class="label">In your hand · win prizes in the Prize Claw to carry them</span><div class="chips" id="oIt"></div></div>
         <div class="field"><span class="label">Sidekick · unlock more with levels and stickers</span><div class="avs" id="avs"></div></div>
       </div>
     </div>
@@ -286,7 +286,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       <p class="dim">Win medals in every game and fill your sticker book to earn these. Frames go around your character, and stickers unlock new sidekicks too.</p>
       <div class="grid" id="prizes"></div>
       <h2 style="margin-top:8px">Claw prizes <span class="dim" id="plushCount" style="font-family:var(--body);font-size:.9rem;font-weight:900"></span></h2>
-      <p class="dim">Ten plush prizes to grab from the Prize Claw. Earn tokens from stars, stickers and daily challenges, then carry your plush around.</p>
+      <p class="dim">Twenty-four prizes to grab from the Prize Claw: plush toys, candy and treats, and gear like headphones, a game controller and a smartphone. Earn tokens from stars, stickers and daily challenges, then carry what you win.</p>
       <div class="grid" id="plushes"></div>
     </div>
     <div class="field">
@@ -298,7 +298,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.8</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.9</p>
   </div>
 </section>
 
@@ -555,7 +555,7 @@ const STK=[
  {id:"t600",e:"💯",n:"600 Club",d:"Score 600 or more"},{id:"s15",e:"🌠",n:"Perfect Night",d:"All 15 stars in a tournament"},
  {id:"plays10",e:"🎟️",n:"Regular",d:"Finish 10 tournaments"},{id:"d7",e:"🗓️",n:"Week-Long Sleepover",d:"Play 7 days in a row"},
  {id:"claw1",e:"🕹️",n:"Got One!",d:"Win a prize from the claw"},{id:"claw5",e:"🦀",n:"Claw Pro",d:"Win 5 claw prizes"},
- {id:"clawgold",e:"💎",n:"Jackpot",d:"Grab the Golden Trophy"},{id:"plush5",e:"🧺",n:"Collector",d:"Own 5 different plush prizes"},
+ {id:"clawgold",e:"💎",n:"Jackpot",d:"Grab the Golden Trophy"},{id:"plush5",e:"🧺",n:"Collector",d:"Own 5 different claw prizes"},
  {id:"tok50",e:"🪙",n:"Token Tycoon",d:"Earn 50 tokens"},{id:"style",e:"💅",n:"Fashion Star",d:"Wear makeup, headphones, a backpack and an item"},
  {id:"party5",e:"🥳",n:"Party Animal",d:"Finish 5 party tournaments"},{id:"triple3",e:"🎇",n:"Star Streak",d:"3 stars in three rounds of one tournament"}];
 function addTok(n){S.tok+=n;S.tokAll=(S.tokAll||0)+n;if(S.tokAll>=50)award("tok50");}
@@ -564,7 +564,7 @@ const MEDAL=["","🥉","🥈","🥇"],medalOf=g=>starsFor(g,S.best[g.id]||0);
 const PRIZES=[{id:"f1",e:"🥈",n:"Silver Frame",d:"Collect 10 stickers",ok:()=>nst()>=10},{id:"f2",e:"🥇",n:"Gold Frame",d:"Collect 20 stickers",ok:()=>nst()>=20},
  {id:"f3",e:"🌈",n:"Rainbow Frame",d:"Collect 30 stickers",ok:()=>nst()>=30},{id:"ex",e:"🧭",n:"Explorer Trophy",d:"Play all 12 games",ok:()=>GAMES.every(g=>S.best[g.id]>0)},
  {id:"ms",e:"🏅",n:"Medal Sweep",d:"Earn a medal in every game",ok:()=>GAMES.every(g=>medalOf(g)>=1)},{id:"cup",e:"🏆",n:"Champion's Cup",d:"Gold medal in all 12 games",ok:()=>GAMES.every(g=>medalOf(g)===3)},
- {id:"p1",e:"🧸",n:"Plush Pal",d:"Win a prize from the claw",ok:()=>nPlush()>=1},{id:"p5",e:"🎁",n:"Toy Box",d:"Win 5 different claw prizes",ok:()=>nPlush()>=5},{id:"p10",e:"👑",n:"Claw Master",d:"Win all 10 claw prizes",ok:()=>nPlush()>=10}];
+ {id:"p1",e:"🧸",n:"Plush Pal",d:"Win a prize from the claw",ok:()=>nPlush()>=1},{id:"p5",e:"🎁",n:"Toy Box",d:"Win 5 different claw prizes",ok:()=>nPlush()>=5},{id:"p12",e:"🛍️",n:"Shopping Spree",d:"Win 12 different claw prizes",ok:()=>nPlush()>=12},{id:"p10",e:"👑",n:"Claw Master",d:"Win all 24 claw prizes",ok:()=>nPlush()>=CLAW.length}];
 const frameTier=()=>nst()>=30?3:nst()>=20?2:nst()>=10?1:0,frameCol=()=>[P.chalk,"#cfd6e6",P.sun,"hsl("+Math.floor(performance.now()/8%360)+",90%,65%)"][frameTier()];
 const dstr=()=>new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
 function hsAdd(list,n,sc){if(!(sc>0))return -1;const e={n,s:sc,d:dstr()};list.push(e);list.sort((a,b)=>b.s-a.s);if(list.length>10)list.length=10;return list.indexOf(e);}
@@ -696,7 +696,12 @@ const SHN=["Outfit Shoes","White Sneakers","Red High-Tops","Cleats","Boots","Pin
 const HPN=["None","Pink","Teal","Yellow","Black","Purple","Kitty Ears","Orange"],HPC=[null,"#ff4f7b","#3fe0c8","#e2f73b","#2b2a45","#a77bff","cat","#ffb23e"];
 const BPN=["None","Red","Blue","Pink","Purple","Green","Gold","Black"],BPK=[null,"#e23b4e","#2f7cff","#ff7fae","#a77bff","#57c84d","#ffcf3e","#2b2a45"];
 const ITN=["None","Softball Bat","Glove","Volleyball","Pom-Poms","Tennis Racket","Soccer Ball","Skateboard","Water Bottle","Kickboard"];
-const CLAW=[{id:"bear",e:"🧸",n:"Teddy Bear",w:.07},{id:"uni",e:"🦄",n:"Unicorn",w:.06},{id:"duck",e:"🐤",n:"Rubber Ducky",w:.07},{id:"dino",e:"🦖",n:"Dino",w:.065},{id:"panda",e:"🐼",n:"Panda",w:.065},{id:"bunny",e:"🐰",n:"Bunny",w:.065},{id:"shark",e:"🦈",n:"Shark",w:.055},{id:"octo",e:"🐙",n:"Octopus",w:.055},{id:"peng",e:"🐧",n:"Penguin",w:.055},{id:"gold",e:"🏆",n:"Golden Trophy",w:.04}];
+const CLAW=[{id:"bear",e:"🧸",n:"Teddy Bear",w:.07},{id:"uni",e:"🦄",n:"Unicorn",w:.06},{id:"duck",e:"🐤",n:"Rubber Ducky",w:.07},{id:"dino",e:"🦖",n:"Dino",w:.065},{id:"panda",e:"🐼",n:"Panda",w:.065},{id:"bunny",e:"🐰",n:"Bunny",w:.065},{id:"shark",e:"🦈",n:"Shark",w:.055},{id:"octo",e:"🐙",n:"Octopus",w:.055},{id:"peng",e:"🐧",n:"Penguin",w:.055},{id:"gold",e:"🏆",n:"Golden Trophy",w:.04},
+ {id:"lolli",e:"🍭",n:"Giant Lollipop",w:.06},{id:"candy",e:"🍬",n:"Candy",w:.06},{id:"choc",e:"🍫",n:"Chocolate Bar",w:.06},{id:"donut",e:"🍩",n:"Donut",w:.06},{id:"cupcake",e:"🧁",n:"Cupcake",w:.06},
+ {id:"boba",e:"🧋",n:"Boba Tea",w:.055},{id:"phones",e:"🎧",n:"Headphones",w:.055},{id:"shades",e:"🕶️",n:"Sunglasses",w:.055},{id:"skates",e:"🛼",n:"Roller Skates",w:.055},{id:"mic",e:"🎤",n:"Karaoke Mic",w:.05},
+ {id:"pad",e:"🎮",n:"Game Controller",w:.05},{id:"cam",e:"📸",n:"Instant Camera",w:.05},{id:"phone",e:"📱",n:"Smartphone",w:.042},{id:"gem",e:"💎",n:"Diamond",w:.04}];
+/* rarity: 0 common, 1 uncommon, 2 rare */
+const CLAWR={shark:1,octo:1,peng:1,boba:1,phones:1,shades:1,skates:1,mic:1,pad:1,cam:1,gold:2,phone:2,gem:2};
 const nPlush=()=>CLAW.filter(z=>S.plush[z.id]>0).length;
 function rrc(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
 function drawItem(c,i,H,u){if(!i)return;const x=H[1][0],y=H[1][1];c.lineCap="round";
@@ -1127,7 +1132,7 @@ function renderLobby(){
   const av=$("avs");av.textContent="";AV.forEach((x,i)=>{const bt=document.createElement("button");bt.type="button";bt.textContent=x[0];bt.setAttribute("aria-pressed",i===S.av);if(avLocked(x,l)){bt.disabled=true;const sm=document.createElement("small");sm.textContent=x[1]>l?"LV "+x[1]:x[2]+" STK";bt.append(sm);}
     bt.onclick=()=>{S.av=i;save();sfx.pop();renderLobby();};av.append(bt);});
   const sk=$("stickers");sk.textContent="";STK.forEach((s,i)=>sk.append(stickerEl(s,!!S.st[s.id],i)));$("stkCount").textContent=nst()+" of "+STK.length;
-  const pz=$("prizes");pz.textContent="";PRIZES.forEach((z,i)=>pz.append(stickerEl(z,z.ok(),i+3)));const pl=$("plushes");pl.textContent="";CLAW.forEach((z,i)=>{const n=S.plush[z.id]||0;pl.append(stickerEl({e:z.e,n:z.n,d:n?"You have "+n:(z.id==="gold"?"Rare!":"Win it in the claw")},n>0,i+1));});$("plushCount").textContent=nPlush()+" of 10";$("clawBtn").textContent="🕹️ Prize Claw · 🪙 "+S.tok+" tokens";renderHs();
+  const pz=$("prizes");pz.textContent="";PRIZES.forEach((z,i)=>pz.append(stickerEl(z,z.ok(),i+3)));const pl=$("plushes");pl.textContent="";CLAW.forEach((z,i)=>{const n=S.plush[z.id]||0;pl.append(stickerEl({e:z.e,n:z.n,d:n?"You have "+n:(CLAWR[z.id]===2?"Rare!":"Win it in the claw")},n>0,i+1));});$("plushCount").textContent=nPlush()+" of "+CLAW.length;$("clawBtn").textContent="🕹️ Prize Claw · 🪙 "+S.tok+" tokens";renderHs();
   const lu=$("lineup");lu.textContent="";GAMES.forEach(g=>{const d=document.createElement("div"),n=document.createElement("b"),t=document.createElement("small"),s=document.createElement("span");d.className="gc";d.style.setProperty("--k",g.k);n.textContent=g.name+" "+MEDAL[medalOf(g)];
     const bs=S.best[g.id]||0;t.textContent=g.tag+(bs?" · best "+bs:" · not played yet");s.className="stars";s.innerHTML=starStr(starsFor(g,bs));d.append(n,t,s);lu.append(d);});
   $("dailyNote").textContent=S.daily.d===todayKey()?"Today's best: "+S.daily.s+". Same five games for everyone today, so dare a friend to top it.":"Same five games for everyone today. Set a score, then dare a friend to top it.";
@@ -1233,8 +1238,9 @@ const kcv=$("clawCv"),kc=kcv.getContext("2d");let KW=300,KH=400;
 const CL={x:.55,y:0,dir:0,ph:"idle",t:0,items:[],held:null,slip:false,slipped:false};
 function clawFit(){const r=$("clawStage").getBoundingClientRect();if(!r.width)return;const d=Math.min(window.devicePixelRatio||1,2);KW=kcv.clientWidth||r.width;KH=kcv.clientHeight||r.height;kcv.width=Math.round(KW*d);kcv.height=Math.round(KH*d);kc.setTransform(d,0,0,d,0,0);}
 window.addEventListener("resize",()=>{if(!$("claw").hidden)clawFit();});
-function clawPick(){const q=Math.random();return q<.08?9:q<.38?6+Math.floor(Math.random()*3):Math.floor(Math.random()*6);}
-function clawFill(){while(CL.items.length<6)CL.items.push({t:clawPick(),x:.26+Math.random()*.66,vx:(Math.random()<.5?-1:1)*(.02+Math.random()*.04)});if(!CL.items.some(i=>i.t===9)&&Math.random()<.5)CL.items[5].t=9;}
+const clawR=t=>CLAWR[CLAW[t].id]||0;
+function clawPick(){const q=Math.random(),r=q<.1?2:q<.42?1:0,pool=CLAW.map((z,i)=>i).filter(i=>clawR(i)===r);return pool[Math.floor(Math.random()*pool.length)];}
+function clawFill(){while(CL.items.length<7)CL.items.push({t:clawPick(),x:.26+Math.random()*.66,vx:(Math.random()<.5?-1:1)*(.02+Math.random()*.04)});if(!CL.items.some(i=>clawR(i.t)===2)&&Math.random()<.5){const rare=CLAW.map((z,i)=>i).filter(i=>clawR(i)===2);CL.items[6].t=rare[Math.floor(Math.random()*rare.length)];}}
 function clawUI(){$("clawTok").textContent="🪙 "+S.tok;const idle=CL.ph==="idle",go=$("clawGo");go.textContent=idle?(S.tok>=5?"Play · 5 tokens":"Need 5 tokens"):CL.ph==="aim"?"DROP!":"...";go.disabled=idle?S.tok<5:CL.ph!=="aim";}
 function clawOpen(){show("claw");clawFit();clawFill();CL.ph="idle";CL.x=.55;CL.y=0;CL.held=null;CL.dir=0;$("clawMsg").textContent=S.tok>=5?"Hold the arrows to line up the claw, then drop it on a prize.":"Win stars and stickers in tournaments to earn more tokens.";clawUI();}
 $("clawBtn").onclick=()=>{sfx.great();clawOpen();};$("clawBack").onclick=()=>{CL.ph="idle";show("lobby");sfx.tap();};
@@ -1244,7 +1250,7 @@ function clawWin(it){const z=CLAW[it.t];S.plush[z.id]=(S.plush[z.id]||0)+1;S.cla
   let msg="You won the "+z.n+"! Carry it around from Customize my character.";award("claw1");if(S.clawWins>=5)award("claw5");if(z.id==="gold")award("clawgold");if(nPlush()>=5)award("plush5");
   PRIZES.forEach(q=>{if(!S.pz[q.id]&&q.ok()){S.pz[q.id]=1;msg+=" Prize won: "+q.e+" "+q.n+"!";}});save();$("clawMsg").textContent=msg;confetti(90);sfx.fanfare();CL.ph="idle";CL.x=.55;clawUI();}
 function clawTick(dt){
-  for(const it of CL.items){if(it===CL.held)continue;it.x+=it.vx*dt*(it.t===9?2.2:1);if(it.x<.25){it.x=.25;it.vx=Math.abs(it.vx);}if(it.x>.94){it.x=.94;it.vx=-Math.abs(it.vx);}}
+  for(const it of CL.items){if(it===CL.held)continue;it.x+=it.vx*dt*(clawR(it.t)===2?2.2:1);if(it.x<.25){it.x=.25;it.vx=Math.abs(it.vx);}if(it.x>.94){it.x=.94;it.vx=-Math.abs(it.vx);}}
   if(CL.ph==="aim"){CL.x=Math.max(.22,Math.min(.95,CL.x+CL.dir*.42*dt));const b=Math.ceil(CL.t);CL.t-=dt;if(CL.t<=0){CL.ph="down";sfx.whoosh();clawUI();}else if(Math.ceil(CL.t)!==b&&CL.t<3)sfx.tick();}
   else if(CL.ph==="down"){CL.y+=dt*1.1;if(CL.y>=1){CL.y=1;let best=null,bd=9;for(const it of CL.items){const d=Math.abs(it.x-CL.x);if(d<CLAW[it.t].w&&d<bd){bd=d;best=it;}}
       if(best){CL.held=best;CL.slip=bd>CLAW[best.t].w*.55&&Math.random()<.5;sfx.good();}else sfx.bad();CL.ph="up";clawUI();}}
