@@ -298,7 +298,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.9</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.10</p>
   </div>
 </section>
 
@@ -1240,7 +1240,9 @@ function clawFit(){const r=$("clawStage").getBoundingClientRect();if(!r.width)re
 window.addEventListener("resize",()=>{if(!$("claw").hidden)clawFit();});
 const clawR=t=>CLAWR[CLAW[t].id]||0;
 function clawPick(){const q=Math.random(),r=q<.1?2:q<.42?1:0,pool=CLAW.map((z,i)=>i).filter(i=>clawR(i)===r);return pool[Math.floor(Math.random()*pool.length)];}
-function clawFill(){while(CL.items.length<7)CL.items.push({t:clawPick(),x:.26+Math.random()*.66,vx:(Math.random()<.5?-1:1)*(.02+Math.random()*.04)});if(!CL.items.some(i=>clawR(i.t)===2)&&Math.random()<.5){const rare=CLAW.map((z,i)=>i).filter(i=>clawR(i)===2);CL.items[6].t=rare[Math.floor(Math.random()*rare.length)];}}
+function clawFill(){for(let lane=0;lane<7;lane++)if(!CL.items.some(i=>i.lane===lane))CL.items.push({t:clawPick(),lane,x:0,ph:Math.random()*7,sp:.5+Math.random()*.7});
+  if(!CL.items.some(i=>clawR(i.t)===2)&&Math.random()<.5){const rare=CLAW.map((z,i)=>i).filter(i=>clawR(i)===2),it=CL.items[Math.floor(Math.random()*CL.items.length)];if(it!==CL.held)it.t=rare[Math.floor(Math.random()*rare.length)];}clawPlace();}
+function clawPlace(){const lw=.69/7;for(const it of CL.items){if(it===CL.held)continue;it.x=.25+(it.lane+.5)*lw+Math.sin((CL.T||0)*it.sp*(clawR(it.t)===2?2.2:1)+it.ph)*lw*.42;}}
 function clawUI(){$("clawTok").textContent="🪙 "+S.tok;const idle=CL.ph==="idle",go=$("clawGo");go.textContent=idle?(S.tok>=5?"Play · 5 tokens":"Need 5 tokens"):CL.ph==="aim"?"DROP!":"...";go.disabled=idle?S.tok<5:CL.ph!=="aim";}
 function clawOpen(){show("claw");clawFit();clawFill();CL.ph="idle";CL.x=.55;CL.y=0;CL.held=null;CL.dir=0;$("clawMsg").textContent=S.tok>=5?"Hold the arrows to line up the claw, then drop it on a prize.":"Win stars and stickers in tournaments to earn more tokens.";clawUI();}
 $("clawBtn").onclick=()=>{sfx.great();clawOpen();};$("clawBack").onclick=()=>{CL.ph="idle";show("lobby");sfx.tap();};
@@ -1250,15 +1252,15 @@ function clawWin(it){const z=CLAW[it.t];S.plush[z.id]=(S.plush[z.id]||0)+1;S.cla
   let msg="You won the "+z.n+"! Carry it around from Customize my character.";award("claw1");if(S.clawWins>=5)award("claw5");if(z.id==="gold")award("clawgold");if(nPlush()>=5)award("plush5");
   PRIZES.forEach(q=>{if(!S.pz[q.id]&&q.ok()){S.pz[q.id]=1;msg+=" Prize won: "+q.e+" "+q.n+"!";}});save();$("clawMsg").textContent=msg;confetti(90);sfx.fanfare();CL.ph="idle";CL.x=.55;clawUI();}
 function clawTick(dt){
-  for(const it of CL.items){if(it===CL.held)continue;it.x+=it.vx*dt*(clawR(it.t)===2?2.2:1);if(it.x<.25){it.x=.25;it.vx=Math.abs(it.vx);}if(it.x>.94){it.x=.94;it.vx=-Math.abs(it.vx);}}
+  CL.T=(CL.T||0)+dt;clawPlace();
   if(CL.ph==="aim"){CL.x=Math.max(.22,Math.min(.95,CL.x+CL.dir*.42*dt));const b=Math.ceil(CL.t);CL.t-=dt;if(CL.t<=0){CL.ph="down";sfx.whoosh();clawUI();}else if(Math.ceil(CL.t)!==b&&CL.t<3)sfx.tick();}
   else if(CL.ph==="down"){CL.y+=dt*1.1;if(CL.y>=1){CL.y=1;let best=null,bd=9;for(const it of CL.items){const d=Math.abs(it.x-CL.x);if(d<CLAW[it.t].w&&d<bd){bd=d;best=it;}}
       if(best){CL.held=best;CL.slip=bd>CLAW[best.t].w*.55&&Math.random()<.5;sfx.good();}else sfx.bad();CL.ph="up";clawUI();}}
-  else if(CL.ph==="up"){CL.y-=dt*.9;if(CL.held&&CL.slip&&CL.y<.55){CL.held.x=CL.x;CL.held=null;CL.slipped=true;sfx.bad();}
+  else if(CL.ph==="up"){CL.y-=dt*.9;if(CL.held&&CL.slip&&CL.y<.55){CL.held=null;CL.slipped=true;sfx.bad();}
     if(CL.y<=0){CL.y=0;if(CL.held)CL.ph="carry";else{CL.ph="idle";$("clawMsg").textContent=CL.slipped?"It slipped! Grab it closer to the middle next time.":"Missed! Line the claw up right over a prize.";clawUI();}}}
   else if(CL.ph==="carry"){CL.x-=dt*.5;if(CL.x<=.1){CL.x=.1;CL.ph="drop";CL.t=.55;sfx.pop();}}
   else if(CL.ph==="drop"){CL.t-=dt;if(CL.t<=0)clawWin(CL.held);}}
-function clawDraw(t){const c=kc,X=f=>KW*(.04+f*.92),ry=KH*.11,fy=KH*.8,sz=Math.min(KW*.13,KH*.13),cy=ry+(fy-ry-sz*1.15)*CL.y;
+function clawDraw(t){const c=kc,X=f=>KW*(.04+f*.92),ry=KH*.11,fy=KH*.8,sz=Math.min(KW*.105,KH*.12),cy=ry+(fy-ry-sz*1.15)*CL.y;
   let g=c.createLinearGradient(0,0,0,KH);g.addColorStop(0,"#2b1f73");g.addColorStop(1,"#4b2f9a");c.fillStyle=g;c.fillRect(0,0,KW,KH);
   const cols=[P.ball,P.stitch,P.bag,P.grape,P.sun];for(let i=0;i<12;i++){const on=Math.floor(t*3+i)%3===0;c.globalAlpha=on?1:.35;c.fillStyle=cols[i%5];c.beginPath();c.arc(KW*(i+.5)/12,KH*.035,Math.max(4,KW*.012),0,7);c.fill();}c.globalAlpha=1;
   c.fillStyle="rgba(120,200,255,.13)";c.fillRect(KW*.03,KH*.07,KW*.94,fy-KH*.07);
