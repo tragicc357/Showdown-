@@ -128,6 +128,7 @@ button.round[aria-pressed="false"]{opacity:.4}
 .rivals span{display:flex;align-items:center;gap:6px;background:var(--fort);border-radius:99px;padding:3px 12px 3px 3px;font-weight:900;font-size:.85rem;white-space:nowrap;flex:0 0 auto}
 .rivals canvas{width:28px;height:28px}.rivals i{font-style:normal}.rivals b{font-family:var(--display);font-weight:400;color:var(--ball)}
 .rivals .me{background:var(--ball);color:var(--ink)}.rivals .me b{color:var(--ink)}
+.voicebtn[aria-pressed="true"]{background:var(--stitch);color:var(--chalk);box-shadow:0 5px 0 #a52548}.hud .voicebtn{font-size:1.05rem;color:var(--chalk)}.hud .voicebtn[aria-pressed="true"]{box-shadow:0 0 0 3px var(--chalk)}
 /* wait */
 .center{align-items:center;justify-content:center;text-align:center}
 .code{display:flex;gap:8px;justify-content:center}
@@ -280,7 +281,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.2</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.3</p>
   </div>
 </section>
 
@@ -295,6 +296,8 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
     <p class="label" style="margin-top:6px">First game in</p>
     <div class="count" id="countOut">0:00</div>
     <div id="peersWBox" hidden style="width:100%;max-width:26em;display:flex;flex-direction:column;gap:8px"><p class="label">Invite friends who are online</p><ul class="peers" id="peersW"></ul></div>
+    <button class="teal voicebtn" id="voiceWait" type="button" hidden>🎤 Talk to your party</button>
+    <button class="quiet voiceoff" type="button" hidden>Leave voice chat</button>
     <p class="dim" id="tipOut" style="max-width:24em"></p>
     <button class="quiet" id="leaveBtn" type="button">Leave party</button>
   </div>
@@ -304,6 +307,7 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
 <section class="screen" id="game" hidden>
   <div class="hud">
     <button class="q" id="quitBtn" type="button" aria-label="Quit to home">✕</button>
+    <button class="q voicebtn" id="voiceHud" type="button" aria-label="Voice chat" hidden>🎤</button>
     <div class="name"><span class="label" id="roundLbl">Round 1 of 5</span><b id="gameLbl">Game</b></div>
     <div class="pts" id="ptsOut">0</div>
   </div>
@@ -351,6 +355,8 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       </div>
       <ol class="board" id="board"></ol>
     </div>
+    <button class="teal voicebtn" id="voiceFin" type="button" hidden>🎤 Talk to your party</button>
+    <button class="quiet voiceoff" type="button" hidden>Leave voice chat</button>
     <div class="row">
       <button class="go" id="rematchBtn" type="button">Rematch!</button>
       <button id="homeBtn" type="button">Home</button>
@@ -452,6 +458,35 @@ function renderVote(){const box=$("voteBox");box.hidden=!(party&&party.vote);if(
   GAMES.forEach((g,i)=>{const b=document.createElement("button");b.type="button";b.textContent=g.name+(voteCounts[i]?" · "+voteCounts[i]:"");b.setAttribute("aria-pressed",myVotes.has(i));b.disabled=!open;
     b.onclick=()=>{if(!voteOpen())return;if(myVotes.has(i))myVotes.delete(i);else if(myVotes.size<5)myVotes.add(i);else{sfx.bad();return;}sfx.pop();voteCounts[i]=Math.max(0,voteCounts[i]+(myVotes.has(i)?1:-1));renderVote();api("PUT","votes/"+lastPK+"/"+S.pid,{g:[...myVotes].join(",")}).catch(()=>{});};el.append(b);});
   $("voteNote").textContent=open?"Vote for up to 5 games. You've used "+myVotes.size+" of 5. Voting closes 6 seconds before the start.":voteDone?"Voting closed. Playing: "+order.map(g=>g.name).join(" · ")+". The most-voted game is the Golden Round.":"Voting closed. Counting the votes...";}
+/* ---------- voice chat: audio goes directly between the players' devices; the database only passes connection details ---------- */
+const V={on:false,muted:false,stream:null,pcs:{},sig:{},timer:null,keep:null,busy:false};
+const vPath=()=>"parties/"+lastPK+"-v",vCan=()=>ONLINE&&!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.RTCPeerConnection);
+function renderVoice(){const show=vCan()&&!!lastPK&&((party&&party.mode==="party")||!$("final").hidden),n=Object.values(V.pcs).filter(c=>c.pc.connectionState==="connected").length;
+  const label=!V.on?"🎤 Talk to your party":V.muted?"🔇 Muted · tap to talk":"🎙️ Live"+(n?" with "+n+(n>1?" friends":" friend"):" · waiting for friends")+" · tap to mute";
+  document.querySelectorAll(".voicebtn").forEach(b=>{b.hidden=!show;b.textContent=b.id==="voiceHud"?(!V.on?"🎤":V.muted?"🔇":"🎙️"):label;b.setAttribute("aria-pressed",V.on&&!V.muted);});
+  document.querySelectorAll(".voiceoff").forEach(b=>{b.hidden=!(show&&V.on);});}
+function vPost(){if(!V.on||!lastPK)return;api("PUT",vPath()+"/"+S.pid,{n:cleanName(myName()),s:0,t:{".sv":"timestamp"},sig:V.sig}).catch(()=>{});}
+function vGather(pc){return new Promise(res=>{if(pc.iceGatheringState==="complete")return res();let fin=false;const done=()=>{if(fin)return;fin=true;pc.removeEventListener("icegatheringstatechange",chk);res();},chk=()=>{if(pc.iceGatheringState==="complete")done();};pc.addEventListener("icegatheringstatechange",chk);setTimeout(done,2500);});}
+function vMake(id){const pc=new RTCPeerConnection({iceServers:[{urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302"]}]}),c={pc,audio:null,nonce:"",at:Date.now()};V.pcs[id]=c;
+  V.stream.getTracks().forEach(t=>pc.addTrack(t,V.stream));
+  pc.ontrack=e=>{if(!c.audio){c.audio=new Audio();c.audio.autoplay=true;c.audio.playsInline=true;}c.audio.srcObject=e.streams[0];c.audio.play().catch(()=>{});};
+  pc.onconnectionstatechange=()=>{if(pc.connectionState==="failed"||pc.connectionState==="closed")vDrop(id);renderVoice();};return c;}
+function vDrop(id){const c=V.pcs[id];if(!c)return;try{c.pc.onconnectionstatechange=null;c.pc.close();}catch(e){}if(c.audio)c.audio.srcObject=null;delete V.pcs[id];delete V.sig[id];}
+async function vPoll(){if(!V.on||V.busy||!lastPK)return;V.busy=true;const pk=lastPK;try{const o=(await api("GET",vPath()))||{},t=clock();let ch=false;
+  for(const id of Object.keys(V.pcs))if(!o[id]||t-(o[id].t||0)>20000){vDrop(id);ch=true;}
+  for(const id in o){if(!V.on||pk!==lastPK)break;if(id===S.pid||!o[id]||t-(o[id].t||0)>20000)continue;const theirs=o[id].sig&&o[id].sig[S.pid],c=V.pcs[id];
+    if(S.pid<id){
+      if(!c){const n=vMake(id);n.nonce=Math.random().toString(36).slice(2,10);await n.pc.setLocalDescription(await n.pc.createOffer());await vGather(n.pc);V.sig[id]={k:"o",n:n.nonce,sdp:n.pc.localDescription.sdp};ch=true;}
+      else if(theirs&&theirs.k==="a"&&theirs.n===c.nonce&&c.pc.signalingState==="have-local-offer")await c.pc.setRemoteDescription({type:"answer",sdp:theirs.sdp});
+      else if(c.pc.connectionState!=="connected"&&Date.now()-c.at>20000){vDrop(id);ch=true;}}
+    else if(theirs&&theirs.k==="o"&&(!c||c.nonce!==theirs.n)){if(c)vDrop(id);const n=vMake(id);n.nonce=theirs.n;await n.pc.setRemoteDescription({type:"offer",sdp:theirs.sdp});await n.pc.setLocalDescription(await n.pc.createAnswer());await vGather(n.pc);V.sig[id]={k:"a",n:n.nonce,sdp:n.pc.localDescription.sdp};ch=true;}}
+  if(ch)vPost();}catch(e){}V.busy=false;renderVoice();}
+async function vJoin(){if(V.on||!vCan()||!lastPK)return;let st;try{st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});}catch(e){$("tipOut").textContent="The microphone is blocked. Allow the microphone for this site in your browser settings to talk.";return;}
+  if(V.on||!lastPK){st.getTracks().forEach(t=>t.stop());return;}
+  V.stream=st;V.on=true;V.muted=false;V.sig={};vPost();V.timer=setInterval(vPoll,1500);V.keep=setInterval(vPost,6000);vPoll();renderVoice();}
+function vLeave(){if(!V.on)return;V.on=false;clearInterval(V.timer);clearInterval(V.keep);for(const id of Object.keys(V.pcs))vDrop(id);if(V.stream)V.stream.getTracks().forEach(t=>t.stop());V.stream=null;V.sig={};if(lastPK)api("DELETE",vPath()+"/"+S.pid).catch(()=>{});renderVoice();}
+function vToggle(){if(!V.on){vJoin();return;}V.muted=!V.muted;V.stream.getAudioTracks().forEach(t=>{t.enabled=!V.muted;});sfx.tap();renderVoice();}
+window.addEventListener("pagehide",()=>{vLeave();});
 let netTick=0;
 if(ONLINE){setInterval(()=>{netTick++;if(netTick%8===1)heartbeat();const lob=!$("lobby").hidden||!$("wait").hidden;if(netTick%3===0&&lob)pollLobby();
     if(party&&party.vote&&netTick%2===0){const d=party.t0-clock();if(d>6000)pollVotes(false);else if(d>-7000)pollVotes(true);}
@@ -955,8 +990,8 @@ let party=null,cur={r:-1,ph:""},game=null,scores=[],rstars=[],banked=[],order=[]
 const screens=["lobby","wait","game","final"];
 function show(id){screens.forEach(s=>$(s).hidden=s!==id);M.mode=id==="game"?"game":id==="final"?"final":"lobby";if(id==="game")fit();if(id==="lobby")renderLobby();}
 function startParty(p,mode){
-  party=p;party.mode=mode||"party";scores=Array(ROUNDS).fill(0);rstars=Array(ROUNDS).fill(0);banked=[];cur={r:-1,ph:""};game=null;newSt=[];pts=0;mult=1;lastTick=-1;
-  rivals={};order=p.pick>0?shuffle(GAMES.filter((g,i)=>p.pick>>i&1),rngFrom(p.seed)):shuffle(GAMES,rngFrom(p.seed)).slice(0,ROUNDS);party.vote=p.pick===-1&&ONLINE;myVotes=new Set();voteCounts=Array(12).fill(0);voteDone=false;$("waitGames").textContent=party.vote?"":(p.pick>0?"Picked games: ":"Tonight's games: ")+order.map(g=>g.name).join(" · ");standings=[];lastPK=party.mode==="party"?p.code+"-"+Math.floor(p.t0/86400000):null;$("ovRank").hidden=true;renderVote();if(ONLINE){heartbeat();renderPeers();if(party.vote)pollVotes(false);}
+  const wasV=V.on;vLeave();party=p;party.mode=mode||"party";scores=Array(ROUNDS).fill(0);rstars=Array(ROUNDS).fill(0);banked=[];cur={r:-1,ph:""};game=null;newSt=[];pts=0;mult=1;lastTick=-1;
+  rivals={};order=p.pick>0?shuffle(GAMES.filter((g,i)=>p.pick>>i&1),rngFrom(p.seed)):shuffle(GAMES,rngFrom(p.seed)).slice(0,ROUNDS);party.vote=p.pick===-1&&ONLINE;myVotes=new Set();voteCounts=Array(12).fill(0);voteDone=false;$("waitGames").textContent=party.vote?"":(p.pick>0?"Picked games: ":"Tonight's games: ")+order.map(g=>g.name).join(" · ");standings=[];lastPK=party.mode==="party"?p.code+"-"+Math.floor(p.t0/86400000):null;$("ovRank").hidden=true;renderVote();renderVoice();if(wasV&&lastPK)vJoin();if(ONLINE){heartbeat();renderPeers();if(party.vote)pollVotes(false);}
   const co=$("codeOut");co.textContent="";[...(mode==="daily"?"DAILY":mode==="solo"?"SOLO":p.code)].forEach(ch=>{const b=document.createElement("b");b.textContent=ch;co.append(b);});co.classList.toggle("long",co.children.length>5);
   $("waitLabel").textContent=mode==="daily"?"Daily challenge":mode==="solo"?"Practice round":"Party code";$("waitHelp").hidden=party.mode!=="party";
   $("tipOut").textContent=TIPS[Math.floor(Math.random()*TIPS.length)];
@@ -979,7 +1014,7 @@ function join(){$("joinErr").textContent="";const now=clock(),p=decode($("codeIn
   if(p.t0-now>10*60000||now-p.t0>ROUNDS*ROUND){$("joinErr").textContent="That party is already over. Ask your friend to start a new one.";sfx.bad();return;}
   startParty(p);}
 $("joinBtn").onclick=join;$("codeIn").addEventListener("keydown",e=>{if(e.key==="Enter")join();});
-$("leaveBtn").onclick=$("homeBtn").onclick=$("quitBtn").onclick=()=>{party=null;game=null;cur={r:-1,ph:""};conf.length=0;show("lobby");sfx.tap();if(ONLINE){heartbeat();pollLobby();}};
+$("leaveBtn").onclick=$("homeBtn").onclick=$("quitBtn").onclick=()=>{vLeave();lastPK=null;party=null;game=null;cur={r:-1,ph:""};conf.length=0;show("lobby");renderVoice();sfx.tap();if(ONLINE){heartbeat();pollLobby();}};
 
 /* ---------- input ---------- */
 function pos(e){const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];}
@@ -1021,7 +1056,7 @@ function finish(){
   const bar=$("finBar"),a0=lvlFloor(l1),b0=lvlFloor(l1+1);bar.style.transition="none";bar.style.width=l1>l0?"0%":Math.round((S.xp-gain-a0)/(b0-a0)*100)+"%";void bar.offsetWidth;bar.style.transition="";setTimeout(()=>bar.style.width=Math.round((S.xp-a0)/(b0-a0)*100)+"%",400);
   $("finNews").textContent=news.join(" ");const fs=$("finStk");fs.textContent="";newSt.forEach((s,i)=>fs.append(stickerEl(s,true,i)));fs.hidden=!newSt.length;
   const rows=$("finRows");rows.textContent="";order.forEach((g,i)=>{const tr=document.createElement("tr"),a=document.createElement("td"),m=document.createElement("td"),b=document.createElement("td");a.textContent=g.name+(i===ROUNDS-1?" ×2":"");m.className="stars";m.innerHTML=starStr(rstars[i]);b.textContent=scores[i];tr.append(a,m,b);rows.append(tr);});
-  tally=[{n:myName()+" (you)",s:total}];manual=[];finalAt=Date.now();$("finHelp").textContent="Hold your iPads up side by side, then type in each friend's score to crown the champ.";renderBoard();show("final");renderStandings();if(ONLINE)heartbeat();$("final").scrollTop=0;
+  tally=[{n:myName()+" (you)",s:total}];manual=[];finalAt=Date.now();$("finHelp").textContent="Hold your iPads up side by side, then type in each friend's score to crown the champ.";renderBoard();show("final");renderStandings();renderVoice();if(ONLINE)heartbeat();$("final").scrollTop=0;
   const t0=performance.now(),out=$("finTotal");(function up(now){const k=Math.min(1,(now-t0)/1400);out.textContent=Math.round(total*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(up);})(t0);
   sfx.fanfare();confetti(160);if(l1>l0)setTimeout(()=>{sfx.levelup();confetti(80);},1700);
 }
@@ -1050,9 +1085,10 @@ function frame(now){
   drawJuice(fdt);ctx.restore();
 }
 fit();renderLobby();requestAnimationFrame(frame);
+document.querySelectorAll(".voicebtn").forEach(b=>{b.onclick=vToggle;});document.querySelectorAll(".voiceoff").forEach(b=>{b.onclick=()=>{vLeave();sfx.tap();};});
 if(ONLINE){$("onlineBox").hidden=false;renderPeers();heartbeat().then(pollLobby);}
 $("invYes").onclick=()=>{if(!invite)return;const p=decode(invite.code,clock());clearInvite();if(p)startParty(p);};$("invNo").onclick=()=>{clearInvite();sfx.tap();};
-window.__ss={encode,decode,S,rivals:()=>rivals,t0:()=>party&&party.t0,setOrder(a){order=a.map(i=>GAMES[i]);}};
+window.__ss={encode,decode,S,voice:()=>Object.values(V.pcs).map(c=>[c.pc.connectionState,c.pc.getReceivers().filter(r=>r.track&&r.track.kind==="audio").length,!!(c.audio&&c.audio.srcObject)]),rivals:()=>rivals,t0:()=>party&&party.t0,setOrder(a){order=a.map(i=>GAMES[i]);}};
 })();
 </script>
 
