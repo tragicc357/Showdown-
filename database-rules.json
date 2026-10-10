@@ -1,0 +1,99 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "lobby": {
+      ".read": true,
+      "$pid": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['n','t'])",
+        "n": {
+          ".validate": "newData.isString() && newData.val().length <= 14"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "scores": {
+      ".read": true,
+      "all": {
+        ".indexOn": [
+          "s"
+        ],
+        "$pid": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['n','s'])",
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 14"
+          },
+          "s": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+          }
+        }
+      },
+      "g": {
+        "$game": {
+          ".indexOn": [
+            "s"
+          ],
+          "$pid": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['n','s'])",
+            "n": {
+              ".validate": "newData.isString() && newData.val().length <= 14"
+            },
+            "s": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+            }
+          }
+        }
+      }
+    },
+    "daily": {
+      ".read": true,
+      "$day": {
+        ".indexOn": [
+          "s"
+        ],
+        "$pid": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['n','s'])",
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 14"
+          },
+          "s": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+          }
+        }
+      }
+    },
+    "parties": {
+      ".read": true,
+      "$party": {
+        "$pid": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['n','s'])",
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 14"
+          },
+          "s": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+          }
+        }
+      }
+    },
+    "votes": {
+      ".read": true,
+      "$party": {
+        "$pid": {
+          ".write": true,
+          ".validate": "newData.hasChildren(['g'])",
+          "g": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          }
+        }
+      }
+    }
+  }
+}
