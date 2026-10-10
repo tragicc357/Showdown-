@@ -281,13 +281,13 @@ td{padding:9px 0;border-top:2px solid var(--fort-2)}td:last-child{text-align:rig
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.5</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 1.6</p>
   </div>
 </section>
 
 <!-- WAITING -->
-<section class="screen center" id="wait" hidden>
-  <div class="wrap center" style="gap:16px">
+<section class="screen scroll" id="wait" hidden>
+  <div class="wrap center" style="gap:16px;margin-block:auto">
     <p class="label" id="waitLabel">Party code</p>
     <div class="code" id="codeOut"></div>
     <p id="waitHelp" style="max-width:26em;font-weight:700">Friends open this game on their own iPads, tap <b>Join party</b> and type this code. Everyone starts together at zero.</p>
@@ -1062,7 +1062,7 @@ const TIPS=["Tip: in Home Run Derby, swing when the ball fills the ring.","Tip: 
 
 let party=null,cur={r:-1,ph:""},game=null,scores=[],rstars=[],banked=[],order=[],lastGt=0,tally=[],lastTick=-1;
 const screens=["lobby","wait","game","final"];
-function show(id){screens.forEach(s=>$(s).hidden=s!==id);if(id!=="game")setTrack(id==="final"?"final":"lobby","full");if(id==="game")fit();if(id==="lobby")renderLobby();}
+function show(id){screens.forEach(s=>$(s).hidden=s!==id);if(id!=="game")setTrack(id==="final"?"final":"lobby","full");if(id==="game")fit();if(id==="lobby")renderLobby();if(id==="wait")$("wait").scrollTop=0;}
 function startParty(p,mode){
   const wasV=V.on;vLeave();party=p;party.mode=mode||"party";scores=Array(ROUNDS).fill(0);rstars=Array(ROUNDS).fill(0);banked=[];cur={r:-1,ph:""};game=null;newSt=[];pts=0;mult=1;lastTick=-1;
   rivals={};order=p.pick>0?shuffle(GAMES.filter((g,i)=>p.pick>>i&1),rngFrom(p.seed)):shuffle(GAMES,rngFrom(p.seed)).slice(0,ROUNDS);party.vote=p.pick===-1&&ONLINE;myVotes=new Set();voteCounts=Array(12).fill(0);voteDone=false;$("waitGames").textContent=party.vote?"":(p.pick>0?"Picked games: ":"Tonight's games: ")+order.map(g=>g.name).join(" · ");standings=[];lastPK=party.mode==="party"?p.code+"-"+Math.floor(p.t0/86400000):null;$("ovRank").hidden=true;renderVote();renderVoice();if(wasV&&lastPK)vJoin();if(ONLINE){heartbeat();renderPeers();if(party.vote)pollVotes(false);}
