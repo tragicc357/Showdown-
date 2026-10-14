@@ -256,10 +256,16 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
 @keyframes chIn{from{transform:translateX(-50%) rotate(-8deg) scale(1.6);opacity:0}}
 @media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
 
-.obhero{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:16px 18px;border-radius:22px;background:linear-gradient(120deg,#ff4fd8,#7b5cff 45%,#2fd3ff);box-shadow:0 7px 0 #4a2fa8,0 0 34px rgba(255,79,216,.35);color:#fff;animation:obHero 3s ease-in-out infinite}
+.obhero{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:16px 18px;border-radius:22px;background:linear-gradient(120deg,#ff4fd8,#7b5cff 45%,#2fd3ff);box-shadow:0 7px 0 #4a2fa8,0 0 34px rgba(255,79,216,.35);color:#fff;animation:obHero 1.4s ease-in-out infinite}
 .obhero b{font-family:var(--display);font-weight:400;font-size:clamp(1.6rem,7vw,2.3rem);line-height:1;text-shadow:0 4px 0 rgba(21,20,58,.45)}.obhero span{font-weight:800;font-size:.95rem;max-width:70%}
 .obhero .obtag{font-size:.72rem;letter-spacing:.12em;background:#f6ff5c;color:#15143a;border-radius:99px;padding:3px 10px}.obhero i{position:absolute;right:12px;bottom:6px;font-style:normal;font-size:clamp(2.4rem,11vw,3.6rem);animation:avFloat 1.4s ease-in-out infinite}
-@keyframes obHero{50%{filter:brightness(1.12) saturate(1.15)}}
+@keyframes obHero{0%,100%{transform:scale(1);box-shadow:0 7px 0 #4a2fa8,0 0 22px rgba(255,79,216,.35),0 0 0 0 rgba(246,255,92,.7)}50%{transform:scale(1.035);box-shadow:0 7px 0 #4a2fa8,0 0 46px rgba(255,79,216,.75),0 0 0 6px rgba(246,255,92,.85)}}
+.obhero{border:3px solid #f6ff5c;cursor:pointer}.obhero::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-120%);animation:obShine 2.2s ease-in-out infinite;pointer-events:none}
+@keyframes obShine{0%,40%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.obhero .obplay{margin-top:10px;font-style:normal;font-family:var(--display);font-weight:400;font-size:clamp(1.1rem,5.2vw,1.5rem);letter-spacing:.04em;background:linear-gradient(120deg,#f6ff5c,#b6ff3b);color:#15143a;border-radius:99px;padding:10px 22px;box-shadow:0 5px 0 #7f9412,0 0 20px rgba(246,255,92,.7);animation:obPlay .9s ease-in-out infinite alternate}
+@keyframes obPlay{to{transform:scale(1.08);box-shadow:0 5px 0 #7f9412,0 0 34px rgba(246,255,92,1)}}
+.obhero:active{transform:translateY(5px) scale(.98)!important;box-shadow:0 2px 0 #4a2fa8!important}
+.obhero i{animation:obRun .5s ease-in-out infinite alternate!important}@keyframes obRun{to{transform:translate(-6px,-8px) rotate(-6deg)}}
 #obby{padding:0;overflow:hidden;background:#12143a;-webkit-user-select:none;user-select:none}
 #obCv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 #obLoad{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;font-size:1.1rem;text-align:center;padding:24px;margin:0;z-index:3}
@@ -316,7 +322,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       </div>
     </header>
 
-    <button class="obhero" id="obBtn" type="button"><span class="obtag">NEW · 3D OBBY</span><b>Sleepover Obby</b><span>Race your friends live through 6 crazy obstacle courses. Win coins for hats, trails and dances!</span><i aria-hidden="true">🏃‍♀️</i></button>
+    <button class="obhero" id="obBtn" type="button"><span class="obtag">NEW · 3D OBBY</span><b>Sleepover Obby</b><span>Race your friends live through 6 crazy obstacle courses. Win coins for hats, trails and dances!</span><em class="obplay">▶ TAP TO PLAY</em><i aria-hidden="true">🏃‍♀️</i></button>
 
     <div class="panel">
       <div class="me">
@@ -419,7 +425,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.1</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.1.1</p>
   </div>
 </section>
 
