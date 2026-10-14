@@ -293,7 +293,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
 .obrec li>b:first-child{width:1.8em;text-align:center}
 .obshop{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}.obi{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;font-size:.8rem;box-shadow:none;background:rgba(58,52,134,.8)}.obi .e{font-size:1.9rem;line-height:1.15}.obi .dot{width:30px;height:30px;border-radius:50%;margin:3px}.obi small{color:var(--dim);font-weight:800}.obi.on{outline:3px solid var(--ball)}.obi.on small{color:var(--ball)}.obi.buy{background:rgba(40,36,100,.85)}
 .obh{font-weight:900;font-size:1.05rem}.obh.big{font-family:var(--display);font-weight:400;font-size:1.8rem;text-align:center}.obcode{font-size:1rem;text-align:center}.obcode b{font-family:var(--display);font-weight:400;font-size:2rem;letter-spacing:.12em;color:var(--ball);user-select:text;-webkit-user-select:text}
-.obnews{font-weight:800;color:var(--bag)}.obchips button{padding:7px 11px;font-size:.85rem;box-shadow:none}
+.obnews{font-weight:800;color:var(--bag)}.obworld{display:flex;flex-direction:column;gap:6px;border-top:2px solid rgba(255,255,255,.1);padding-top:8px}.obc .obwr{color:var(--ball)}.obchips button{padding:7px 11px;font-size:.85rem;box-shadow:none}
 .obtgt{display:flex;align-items:center;gap:8px}.obtgt b{flex:1;text-align:center}.obtgt button{padding:7px 14px;box-shadow:none}
 .obtrow{display:flex;gap:8px}.obtb{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px;box-shadow:none;background:rgba(255,79,123,.85)}.obtb span{font-size:1.7rem}.obtb small{font-weight:900}.obtb:disabled{opacity:.45}
 #obCode{text-transform:uppercase}
@@ -419,7 +419,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.0.3</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.1</p>
   </div>
 </section>
 
@@ -2074,13 +2074,21 @@ function obMenu(){obLeaveNet();OB.race=null;OB.mode="menu";OB.emo=null;OB.tgt=nu
 function obClose(){obLeaveNet();OB.race=null;OB.on=false;cancelAnimationFrame(OB.raf);for(const id in OB.rem)avDrop(OB.rem[id].A);OB.rem={};save();show("lobby");if(ONLINE){heartbeat();pollLobby();}}
 
 /* ---------- races: solo (with ghosts) and live parties ---------- */
+async function obTop(cid,fresh){const c=OB.lb[cid];if(!fresh&&c&&Date.now()-c.at<15000)return c.list;const o=(await api("GET","scores/g/"+cid,undefined,"?orderBy=%22s%22&limitToLast=10"))||{};
+  const list=Object.keys(o).map(id=>({id,n:cleanName(o[id].n),ms:(5000-(+o[id].s||0))*100})).filter(e=>e.ms>0&&e.ms<500000).sort((a,b)=>a.ms-b.ms);OB.lb[cid]={at:Date.now(),list};return list;}
+async function obSubmit(r,gh){const cid=r.cid,s=Math.max(1,5000-Math.round(r.ft/100));r.wait=true;let best=r.ft;
+  try{const cur=await api("GET","scores/g/"+cid+"/"+S.pid);if(cur&&+cur.s>=s){best=(5000-cur.s)*100;r.oldBest=best;}else{await api("PUT","scores/g/"+cid+"/"+S.pid,{n:cleanName(myName()),s,t:{".sv":"timestamp"}});api("PUT","scores/g/"+cid+"-gh/"+S.pid,{n:cleanName(myName()),s,gh,ch:S.ch}).catch(()=>{});r.newWorldBest=true;}
+    const bs=5000-Math.round(best/100),faster=(await api("GET","scores/g/"+cid,undefined,"?orderBy=%22s%22&startAt="+(bs+1)))||{};r.wrank=Object.keys(faster).filter(id=>id!==S.pid).length+1;
+    r.wrList=await obTop(cid,true);r.isWR=r.newWorldBest&&r.wrank===1&&(!r.wr0||r.ft<r.wr0.ms||r.wr0.id===S.pid);
+    if(r.isWR&&OB.race===r){obBig("WORLD RECORD!",2);confetti(160);sfx.levelup();}}catch(e){r.wrErr=true;}
+  r.wait=false;if(OB.race===r&&OB.mode==="results")obResRender();}
 function obStart(o){const ci=o.ci,t0=o.t0;OB.ci=ci;obSetWorld(ci,t0);for(const c of OB.W.coins){c.got=false;c.m.visible=true;}for(const C of OB.W.cols){C.cs=0;delete C.flipT;}
   const h=[...S.pid].reduce((a,ch)=>a*31+ch.charCodeAt(0)>>>0,7),sx=((h%9)-4)*1.1,sz=-5+(h>>4)%5;obPlace(OB.me,o.party?sx:0,0,o.party?sz:-2);OB.me.face=0;OB.cam.yaw=0;OB.cam.tx=OB.me.x;OB.cam.ty=0;OB.cam.tz=OB.me.z;
   OB.race={party:!!o.party,code:o.code||"",t0,ci,cid:obCid(ci,t0),key:o.party?"OB"+o.code+"-"+Math.floor(t0/86400000):null,end:0,res:null,coins0:SO.coins,bonus:0,told:{}};
   OB.mode="race";OB.emo=null;OB.chat=null;OB.tr=[];OB.trSeen={};OB.cool={};OB.tgt=null;OB.gTrack=[];OB.gRec=0;OB.lastBig=null;
   if(OB.ghostAv){avDrop(OB.ghostAv);OB.ghostAv=null;}OB.gh=null;const gsrc=o.ghost||(!o.party&&OB.ghost&&SO.gh[OB.race.cid]?{n:"Your best",d:SO.gh[OB.race.cid]}:null);
   if(gsrc&&typeof gsrc.d==="string"){const d=gsrc.d.split("|").map(s=>s.split(",").map(Number)).filter(a=>a.length===4&&a.every(isFinite));if(d.length>5){OB.gh={d,n:gsrc.n};OB.ghostAv=mkAv(gsrc.ch||S.ch,{},{ghost:true,name:"👻 "+gsrc.n});}}
-  setTrack(OBC[ci].tr,"full");obUI();if(o.party){obPostInfo();obNetTick(performance.now(),obT(),true);}if(ONLINE)heartbeat();}
+  setTrack(OBC[ci].tr,"full");obUI();if(ONLINE){const rr=OB.race;obTop(rr.cid).then(l=>{rr.wr0=l[0]||null;}).catch(()=>{});}if(o.party){obPostInfo();obNetTick(performance.now(),obT(),true);}if(ONLINE)heartbeat();}
 function obSolo(ghost){if(!obUnlocked(OB.ci)){obNote("Finish "+OBC[OB.ci-1].n+" first to unlock this course!");sfx.bad();return;}sfx.great();obStart({ci:OB.ci,t0:clock()+3600,ghost});}
 function obHost(){const t0=Math.ceil((clock()+OB.lead*1000)/UNIT)*UNIT,code=encode(t0,0,OB.ci);obStart({ci:OB.ci,t0,party:true,code});for(const id of OB.sel)obInvite(id,code);OB.invited=new Set(OB.sel);OB.sel.clear();sfx.great();}
 function obInvite(id,code){if(!ONLINE)return;api("PATCH","lobby/"+id,{inv:{f:cleanName(myName()),c:code}}).catch(()=>{});}
@@ -2091,11 +2099,11 @@ function obFinish(P){const r=OB.race;if(!r||P.fin)return;const t=obT();if(t<0)re
   if(OB.gTrack){OB.gTrack.push([P.x,P.y,P.z,P.face].map(v=>v.toFixed(1)).join(","));}
   const news=[];let bonus=20;const cid=r.cid,pb=SO.best[cid];
   if(!(pb<=r.ft)){SO.best[cid]=r.ft;const gh=OB.gTrack.slice(0,3000).join("|");SO.gh[cid]=gh;if(pb)news.push("New personal best! (was "+fmtT(pb)+")");bonus+=10;
-    if(ONLINE&&r.ft<499000){const s=Math.max(1,5000-Math.round(r.ft/100));api("PUT","scores/g/"+cid+"/"+S.pid,{n:cleanName(myName()),s,t:{".sv":"timestamp"}}).catch(()=>{});api("PUT","scores/g/"+cid+"-gh/"+S.pid,{n:cleanName(myName()),s,gh,ch:S.ch}).catch(()=>{});for(const k in OB.lb)delete OB.lb[k];}
+    
     if(!pb&&r.ci<5&&!SO.best["ob-"+OBC[r.ci+1].id])news.push("New course unlocked: "+OBC[r.ci+1].e+" "+OBC[r.ci+1].n+"!");}
   if(P.falls===0&&!SO.badge[r.ci===6?"daily":cid]){SO.badge[r.ci===6?"daily":cid]=1;bonus+=40;news.push("⭐ No-fall badge earned! +40 coins");}
   if(r.ci===6&&SO.dailyDone!==todayKey()){SO.dailyDone=todayKey();bonus+=30;news.push("Daily course done! +30 coins");}
-  r.bonus=bonus;SO.coins+=bonus;S.xp+=40+P.coins;addTok(2);S.plays++;r.news=news;save();
+  if(ONLINE&&r.ft<499000)obSubmit(r,OB.gTrack.slice(0,3000).join("|"));r.bonus=bonus;SO.coins+=bonus;S.xp+=40+P.coins;addTok(2);S.plays++;r.news=news;save();
   if(r.party)obNetTick(performance.now(),t,true);else setTimeout(()=>{if(OB.race===r)obResults();},1400);}
 function obResults(){const r=OB.race;if(!r||OB.mode==="results")return;OB.mode="results";OB.emo=null;const P=OB.me,rows=obStandings();r.res=rows;
   const W=OB.W,me=rows.findIndex(e=>e.me);if(r.party&&me>=0&&P.fin){const pb=[30,20,10][me]||0;if(pb){SO.coins+=pb;r.bonus+=pb;r.news.unshift((["🥇 1st","🥈 2nd","🥉 3rd"][me])+" place! +"+pb+" coins");}save();}
@@ -2163,7 +2171,7 @@ let obNoteT=0;function obNote(t){const e=$("obNote");e.textContent=t;clearTimeou
 function obUI(){const m=OB.mode,r=OB.race,party=!!(r&&r.party);$("obMenu").hidden=m!=="menu";$("obRes").hidden=m!=="results";$("obCtl").hidden=m!=="race";$("obStat").hidden=m!=="race";$("obPlaceBox").hidden=!(m==="race"&&party);$("obProg").hidden=!(m==="race"&&party);
   $("obEmoBtn").hidden=m==="menu";$("obEmo").hidden=true;$("obWait").hidden=true;$("obTroll").hidden=true;$("obBig").textContent="";$("obBack").setAttribute("aria-label",m==="menu"?"Back to home":"Leave the race");OB.lastCount=null;OB.waitAt=0;}
 function obHud(t){const P=OB.me,r=OB.race,W=OB.W;$("obCoins").textContent="🪙 "+SO.coins;if(OB.mode!=="race"||!r)return;
-  $("obTime").textContent=fmtT(P.fin?r.ft:Math.max(0,t*1000));$("obCp").textContent="Checkpoint "+P.cp+"/"+W.cps.length+(P.falls?" · "+P.falls+" fall"+(P.falls>1?"s":""):"");
+  $("obTime").textContent=fmtT(P.fin?r.ft:Math.max(0,t*1000));$("obCp").textContent="Checkpoint "+P.cp+"/"+W.cps.length+(P.falls?" · "+P.falls+" fall"+(P.falls>1?"s":""):"")+(r.wr0?" · 🌍 "+fmtT(r.wr0.ms):"");
   if(t<0&&t>-3.2){const n=Math.ceil(-t);if(OB.lastCount!==n){OB.lastCount=n;obBig(String(n));sfx.tick();}}
   else if(t>=0&&OB.lastCount!=null&&OB.lastCount!=="go"){OB.lastCount="go";obBig("GO!");sfx.whistle();if(W.T.rise)setTimeout(()=>obNote(W.tk==="lava"?"🌋 The lava is rising! Keep climbing!":"🌊 The tide is coming in! Keep moving!"),1200);}
   const ctl=$("obStick").parentElement;ctl.classList.toggle("done",!!(P.fin&&r.party));
@@ -2186,8 +2194,8 @@ function obMenuRender(){const m=$("obMenu");m.textContent="";const tabs=oel("div
   if(OB.tab==="play")obPlayRender(m);else if(OB.tab==="shop")obShopRender(m);else obRecRender(m);}
 function obPlayRender(m){const C=OBC[OB.ci],un=obUnlocked(OB.ci),cid=obCid(OB.ci,clock());
   const hd=oel("div","obhead",null,m);oel("b",null,C.e+" "+C.n,hd);oel("small",null,C.d,hd);
-  const g=oel("div","obcs",null,m);OBC.forEach((c,i)=>{const u=obUnlocked(i),b=obtn("","obc",()=>{if(OB.ci===i)return;OB.ci=i;sfx.tap();obMenu();},g);b.setAttribute("aria-pressed",OB.ci===i);if(!u)b.classList.add("lock");
-    oel("span","e",u?c.e:"🔒",b);oel("b",null,c.n,b);const bk=obCid(i,clock()),best=SO.best[bk];oel("small",null,!u?"Finish "+OBC[i-1].n:best?"Best "+fmtT(best)+(SO.badge[i===6?"daily":bk]?" ⭐":""):i===6?"New every day":"Not finished yet",b);});
+  const g=oel("div","obcs",null,m);if(ONLINE)setTimeout(obCardWR,0);OBC.forEach((c,i)=>{const u=obUnlocked(i),b=obtn("","obc",()=>{if(OB.ci===i)return;OB.ci=i;sfx.tap();obMenu();},g);b.setAttribute("aria-pressed",OB.ci===i);if(!u)b.classList.add("lock");
+    oel("span","e",u?c.e:"🔒",b);oel("b",null,c.n,b);const bk=obCid(i,clock()),best=SO.best[bk];oel("small",null,!u?"Finish "+OBC[i-1].n:best?"Best "+fmtT(best)+(SO.badge[i===6?"daily":bk]?" ⭐":""):i===6?"New every day":"Not finished yet",b);const wr=oel("small","obwr",null,b);wr.dataset.cid=bk;});
   const row=oel("div","row",null,m);const go=obtn(un?"▶ Race solo":"🔒 Locked","go",()=>obSolo(),row);go.disabled=!un;
   if(SO.gh[cid]&&un){const gb=obtn("👻 Ghost: "+(OB.ghost?"On":"Off"),"",()=>{OB.ghost=!OB.ghost;sfx.tap();obMenuRender();},row);gb.style.flex="0 0 auto";gb.setAttribute("aria-pressed",OB.ghost);}
   if(!ONLINE){oel("p","dim","Racing friends live needs the online version of the game.",m);return;}
@@ -2197,6 +2205,7 @@ function obPlayRender(m){const C=OBC[OB.ci],un=obUnlocked(OB.ci),cid=obCid(OB.ci
   obtn("👯 Start a race party","teal",()=>{if(!obUnlocked(OB.ci)&&OB.ci!==6){}obHost();},f);
   const jr=oel("div","row",null,f);jr.style.flexWrap="nowrap";const inp=oel("input",null,null,jr);inp.id="obCode";inp.maxLength=8;inp.placeholder="Race code";inp.setAttribute("aria-label","Race code");inp.autocomplete="off";
   const jb=obtn("Join","",()=>{const p=decode(inp.value,clock());if(!p){obNote("That code doesn't look right. Check the letters.");sfx.bad();return;}if(p.ob==null){obNote("That's a Showdown minigame code. Join it from the home screen.");sfx.bad();return;}obJoinCode(p);},jr);jb.style.flex="0 0 auto";}
+async function obCardWR(){for(const e of[...document.querySelectorAll(".obwr")]){const cid=e.dataset.cid;try{const l=await obTop(cid);if(e.isConnected)e.textContent=l[0]?"🌍 "+fmtT(l[0].ms)+" "+l[0].n:"🌍 No world record yet";}catch(x){}}}
 function obPeersRender(){const ul=$("obPeers");if(!ul)return;ul.textContent="";const ids=Object.keys(peers).sort((a,b)=>peers[a].n.localeCompare(peers[b].n));for(const id of[...OB.sel])if(!peers[id])OB.sel.delete(id);
   if(!ids.length){oel("li","dim","Nobody else is online right now. Start a party and share the code!",ul);return;}
   ids.forEach(id=>{const p=peers[id],li=oel("li",null,null,ul),busy=["party","solo","race"].includes(p.st),on=OB.sel.has(id);oel("span",null,p.n+(p.st==="hang"?" · in hangout":p.st==="obby"?" · in obby":""),li);const b=obtn(busy?"Playing":on?"Picked ✓":"Pick","",()=>{if(on)OB.sel.delete(id);else OB.sel.add(id);sfx.pop();obPeersRender();},li);b.disabled=busy;b.setAttribute("aria-pressed",on);});}
@@ -2223,6 +2232,9 @@ function obResRender(){const w=$("obRes"),r=OB.race,rows=r.res||obStandings(),P=
   oel("p","obh big",r.party?(P.fin?(mi===0?"🏆 You won!":"You came "+ordn2(mi+1)+"!"):"Race over!"):(P.fin?"🏁 "+fmtT(r.ft):"Race over"),w);
   const ul=oel("ol","oblist obrec",null,w);rows.forEach((e,i)=>{const li=oel("li",e.me?"me":null,null,ul);oel("b",null,e.f?(i<3?["🥇","🥈","🥉"][i]:(i+1)+"."):"–",li);oel("span",null,e.n+(e.me?" (you)":""),li);oel("small",null,e.fl?e.fl+" fall"+(e.fl>1?"s":""):"no falls",li);oel("b",null,e.f?fmtT(e.f):"DNF",li);});
   const earned=SO.coins-r.coins0;oel("p","obnews","🪙 +"+Math.max(0,earned)+" coins this race"+(r.news&&r.news.length?" · "+r.news.join(" · "):""),w);
+  if(ONLINE&&P.fin){const wb=oel("div","obworld",null,w);if(r.wait)oel("p","dim","🌍 Checking the world records…",wb);else if(r.wrErr)oel("p","dim","🌍 Couldn't reach the world records right now.",wb);else{
+    oel("p","obh",r.isWR?"👑 NEW WORLD RECORD!":r.newWorldBest?"🌍 New world best for you! You're #"+r.wrank+" in the world":"🌍 You're #"+r.wrank+" in the world"+(r.oldBest?" (your best "+fmtT(r.oldBest)+")":""),wb);
+    const ul=oel("ol","oblist obrec",null,wb);(r.wrList||[]).slice(0,3).forEach((e,i)=>{const li=oel("li",e.id===S.pid?"me":null,null,ul);oel("b",null,["🥇","🥈","🥉"][i],li);oel("span",null,e.n+(e.id===S.pid?" (you)":""),li);oel("b",null,fmtT(e.ms),li);});}}
   const row=oel("div","row",null,w);
   if(r.party){obtn("🔁 Race again","go",()=>{OB.sel=new Set(rows.filter(e=>!e.me).map(e=>e.id));obHost();},row);}else{obtn("🔁 Try again","go",()=>obStart({ci:r.ci,t0:clock()+3600,ghost:OB.gh?{n:OB.gh.n,d:OB.gh.d.map(a=>a.join(",")).join("|")}:null}),row);
     const nx=r.ci<5&&obUnlocked(r.ci+1)?r.ci+1:-1;if(nx>=0)obtn("Next: "+OBC[nx].e+" "+OBC[nx].n,"teal",()=>{OB.ci=nx;obMenu();},row);}
