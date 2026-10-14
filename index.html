@@ -288,7 +288,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
 #obEmoBtn{position:absolute;right:134px;bottom:44px;z-index:2;border:3px solid rgba(255,255,255,.85)}#obCtl[hidden]~#obEmoBtn{right:16px;bottom:auto;top:62px}
 #obEmo{position:absolute;right:12px;bottom:150px;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;max-width:260px;z-index:3}#obEmo button{width:48px;height:48px;padding:0;border-radius:50%;font-size:1.5rem;background:rgba(18,20,58,.88);box-shadow:none}
 .obsheet{position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:min(780px,100%);box-sizing:border-box;background:rgba(14,14,46,.9);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-radius:24px 24px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;max-height:min(60%,560px);overflow-y:auto;z-index:2;border-top:2px solid rgba(167,123,255,.5)}
-#obWait,#obTroll{max-height:46%}@media (max-aspect-ratio:3/4){#obMenu{max-height:54%}}#obTroll{background:rgba(14,14,46,.82)}
+#obWait,#obTroll{max-height:46%}@media (max-aspect-ratio:3/4){#obMenu{max-height:54%}}@media (min-width:700px){#obStick{width:150px;height:150px;left:36px;bottom:40px}#obStick i{width:66px;height:66px;margin:-33px}#obJump{width:132px;height:132px;right:34px;bottom:40px;font-size:1.3rem}#obEmoBtn{right:186px;bottom:56px}}#obTroll{background:rgba(14,14,46,.82)}
 .obtabs{display:flex;gap:6px;align-items:center}.obtabs button{padding:9px 13px;font-size:.9rem;box-shadow:none}.obtabs button[aria-pressed=true]{background:var(--ball);color:var(--ink)}.obwallet{margin-left:auto;font-weight:900;white-space:nowrap}
 .obhead{display:flex;flex-direction:column}.obhead b{font-family:var(--display);font-weight:400;font-size:1.4rem}.obhead small,.obh small{color:var(--dim);font-weight:700}
 .obcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
@@ -425,7 +425,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.1.1</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.2</p>
   </div>
 </section>
 
@@ -2002,10 +2002,10 @@ function obStep(P,dt,t,input){const W=OB.W,near=OB.near;
   if(P.wall&&!G&&P.vy<-3)P.vy=-3;
   if(P.jb>0&&(G||P.coy>0)&&P.stun<=0){P.vy=13;P.jb=0;P.coy=0;P.gnd=null;P.cut=true;sfx.tap();puff(P.x,P.y+.1,P.z,{life:.4,sz:.7,grow:1});}
   else if(P.jb>0&&!G&&P.wjT>0){P.vy=12.5;P.vx=P.wjN[0]*9.5;P.vz=P.wjN[1]*9.5;P.lock=.25;P.jb=0;P.wjT=0;P.cut=true;P.face=Math.atan2(P.wjN[0],P.wjN[1]);sfx.tap();obBurst(P.x,P.y+1,P.z,5,{sz:.3});}
-  if(!input.hold&&P.cut&&P.vy>7.5){P.vy=7.5;P.cut=false;}if(P.vy<=0)P.cut=false;
+  if(P.vy<=0)P.cut=false;
   const fallV=P.vy;P.x+=P.vx*dt;obCol(P,0,0,t,near);P.z+=P.vz*dt;obCol(P,2,0,t,near);const py=P.y;P.y+=P.vy*dt;const L=obCol(P,1,py,t,near);
   if(L){if(L.pad){P.vy=L.pad;P.gnd=null;P.cut=false;sfx.pop();obBurst(P.x,P.y+.1,P.z,6,{c:W.T.pad,sz:.35});OB.squash=.25;}
-    else{if(!G&&fallV<-14){obBurst(P.x,P.y+.1,P.z,6,{sz:.4});OB.squash=.18;}P.gnd=L;P.coy=.12;
+    else{if(!G&&fallV<-14){obBurst(P.x,P.y+.1,P.z,6,{sz:.4});OB.squash=.18;}P.gnd=L;P.coy=.16;
       if(L.cp&&L.cp>P.cp)obCheckpoint(P,L);if(L.fin&&!P.fin)obFinish(P);if(L.crum&&!L.cs){L.cs=1;L.ct=performance.now();}if(L.start&&OB.race&&t>2&&!P.fin){}}}
   else P.gnd=null;
   /* walls you can wall-jump off and trusses you can climb */
@@ -2026,7 +2026,7 @@ function obCheckpoint(P,L){P.cp=L.cp;P.spawn=[(L.mn[0]+L.mx[0])/2,L.mx[1],(L.mn[
 
 /* ---------- game loop ---------- */
 function obT(){return OB.race?(clock()-OB.race.t0)/1000:performance.now()/1000;}
-function obInput(){const k=OB.ctl.keys;return{x:OB.ctl.jx+(k.r?1:0)-(k.l?1:0),y:OB.ctl.jy+(k.f?1:0)-(k.b?1:0),hold:OB.ctl.jump};}
+function obInput(){const k=OB.ctl.keys;let jx=OB.ctl.jx,jy=OB.ctl.jy;const m=Math.hypot(jx,jy);if(m<.16){jx=jy=0;}else{const s=Math.min(1,(m-.16)/.6)/m;jx*=s;jy*=s;}return{x:jx+(k.r?1:0)-(k.l?1:0),y:jy+(k.f?1:0)-(k.b?1:0),hold:OB.ctl.jump};}
 function obWorldTick(t,dt){const W=OB.W,now=performance.now();
   for(const C of W.cols){if(C.mv){C.po=C.o;C.o=C.mv(t);for(let i=0;i<3;i++){C.mn[i]=C.bmn[i]+C.o[i];C.mx[i]=C.bmx[i]+C.o[i];}C.g.position.set(C.base[0]+C.o[0],C.base[1]+C.o[1],C.base[2]+C.o[2]);}
     if(C.vanish){const v=C.vanish,q=((t+v.ph)%v.P+v.P)%v.P,on=q<v.on,warn=on&&q>v.on-.7;C.g.visible=true;const op=on?(warn&&Math.floor(q*10)%2?.35:1):.12;C.mats[0].opacity=op;C.mats[1].opacity=op;}
@@ -2056,6 +2056,7 @@ function obCamTick(dt,ts){const c=OB.cam,P=OB.me;let tx=P.x,ty=P.y,tz=P.z;
     R3.cam.position.set(P.x-Math.sin(yaw)*c.dist*cp,P.y+1.2+Math.sin(pitch)*c.dist,P.z-Math.cos(yaw)*c.dist*cp);R3.cam.lookAt(P.x,tyy,P.z);return;}
   if(OB.mode==="results"){const W=OB.W,p=W.podium[0],yaw=Math.PI+Math.sin(ts*.3)*.35,d=11;R3.cam.position.set(p[0]-Math.sin(yaw)*d,p[1]+3.4,p[2]-Math.cos(yaw)*d);R3.cam.lookAt(p[0],p[1]+(innerWidth<innerHeight?-.6:.8),p[2]-1);return;}
   if(P.fin&&OB.race&&OB.race.party&&OB.tgt&&OB.rem[OB.tgt]&&OB.rem[OB.tgt].pos&&performance.now()-(OB.movedAt||0)>3000){const q=OB.rem[OB.tgt].pos;tx=q[0];ty=q[1];tz=q[2];}
+  {const inp=obInput(),sp=Math.hypot(P.vx,P.vz);if(OB.mode==="race"&&!P.zip&&sp>2.5&&inp.y>.35&&performance.now()-(OB.dragAt||0)>1500&&!(P.fin&&OB.tgt&&performance.now()-(OB.movedAt||0)>3000)){let d=P.face-c.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));if(Math.abs(d)<2.2)c.yaw+=d*Math.min(1,dt*1.6);}}
   c.tx+=(tx-c.tx)*Math.min(1,dt*12);c.ty+=(ty-c.ty)*Math.min(1,dt*7);c.tz+=(tz-c.tz)*Math.min(1,dt*12);c.dist+=(9-c.dist)*Math.min(1,dt*3);
   const cp=Math.cos(c.pitch);R3.cam.position.set(c.tx-Math.sin(c.yaw)*c.dist*cp,c.ty+1.7+Math.sin(c.pitch)*c.dist,c.tz-Math.cos(c.yaw)*c.dist*cp);R3.cam.lookAt(c.tx,c.ty+1.7,c.tz);}
 
@@ -2249,13 +2250,13 @@ function obResRender(){const w=$("obRes"),r=OB.race,rows=r.res||obStandings(),P=
 /* ---------- controls: floating joystick on the left, camera drag on the right, jump button; keyboard too ---------- */
 (function(){const cv=$("obCv"),st=$("obStick"),knob=st.firstElementChild;let joy=null,camP=null;
   cv.addEventListener("pointerdown",e=>{if(!OB.on)return;e.preventDefault();const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
-    if(OB.mode==="race"&&x<r.width*.48&&y>r.height*.3){if(camP&&camP.id===e.pointerId)camP=null;joy={id:e.pointerId,x0:x,y0:y};st.style.left=(x-60)+"px";st.style.top=(y-60)+"px";st.style.bottom="auto";st.classList.add("on");}
+    if(OB.mode==="race"&&x<r.width*.48&&y>r.height*.3){if(camP&&camP.id===e.pointerId)camP=null;joy={id:e.pointerId,x0:x,y0:y};const hs=st.offsetWidth/2||60;st.style.left=(x-hs)+"px";st.style.top=(y-hs)+"px";st.style.bottom="auto";st.classList.add("on");}
     else camP={id:e.pointerId,x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(x){}});
-  cv.addEventListener("pointermove",e=>{if(joy&&e.pointerId===joy.id){const r=cv.getBoundingClientRect();let dx=e.clientX-r.left-joy.x0,dy=e.clientY-r.top-joy.y0;const d=Math.hypot(dx,dy),mx=52;if(d>mx){dx=dx/d*mx;dy=dy/d*mx;}knob.style.transform="translate("+dx+"px,"+dy+"px)";OB.ctl.jx=dx/mx;OB.ctl.jy=-dy/mx;}
-    else if(camP&&e.pointerId===camP.id){const dx=e.clientX-camP.x,dy=e.clientY-camP.y;camP.x=e.clientX;camP.y=e.clientY;if(OB.mode==="menu")OB.dragYaw=(OB.dragYaw||0)-dx*.008;else{OB.cam.yaw-=dx*.0085;OB.cam.pitch=Math.max(.04,Math.min(1.15,OB.cam.pitch+dy*.006));}}});
+  cv.addEventListener("pointermove",e=>{if(joy&&e.pointerId===joy.id){const r=cv.getBoundingClientRect();let dx=e.clientX-r.left-joy.x0,dy=e.clientY-r.top-joy.y0;const d=Math.hypot(dx,dy),mx=innerWidth>=700?64:52;if(d>mx){dx=dx/d*mx;dy=dy/d*mx;}knob.style.transform="translate("+dx+"px,"+dy+"px)";OB.ctl.jx=dx/mx;OB.ctl.jy=-dy/mx;}
+    else if(camP&&e.pointerId===camP.id){const dx=e.clientX-camP.x,dy=e.clientY-camP.y;camP.x=e.clientX;camP.y=e.clientY;if(OB.mode==="menu")OB.dragYaw=(OB.dragYaw||0)-dx*.008;else{OB.cam.yaw-=dx*.0085;OB.dragAt=performance.now();OB.cam.pitch=Math.max(.04,Math.min(1.15,OB.cam.pitch+dy*.006));}}});
   const end=e=>{if(joy&&e.pointerId===joy.id){joy=null;OB.ctl.jx=OB.ctl.jy=0;knob.style.transform="";st.classList.remove("on");st.style.left="";st.style.top="";st.style.bottom="";}if(camP&&e.pointerId===camP.id)camP=null;};
   cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);cv.addEventListener("lostpointercapture",end);OB.resetCtl=()=>{joy=null;camP=null;OB.ctl.jx=OB.ctl.jy=0;OB.ctl.jump=false;OB.ctl.keys={};knob.style.transform="";st.classList.remove("on");st.style.left="";st.style.top="";st.style.bottom="";};document.addEventListener("visibilitychange",()=>OB.resetCtl());
-  const jb=$("obJump");jb.addEventListener("pointerdown",e=>{e.preventDefault();OB.ctl.jump=true;if(OB.me)OB.me.jb=.15;});["pointerup","pointercancel","pointerleave"].forEach(k=>jb.addEventListener(k,()=>{OB.ctl.jump=false;}));
+  const jb=$("obJump");jb.addEventListener("pointerdown",e=>{e.preventDefault();OB.ctl.jump=true;if(OB.me)OB.me.jb=.22;});["pointerup","pointercancel","pointerleave"].forEach(k=>jb.addEventListener(k,()=>{OB.ctl.jump=false;}));
   const K={ArrowUp:"f",KeyW:"f",ArrowDown:"b",KeyS:"b",ArrowLeft:"l",KeyA:"l",ArrowRight:"r",KeyD:"r"};
   addEventListener("keydown",e=>{if(!OB.on||e.target.tagName==="INPUT")return;if(K[e.code]){OB.ctl.keys[K[e.code]]=true;e.preventDefault();}if(e.code==="Space"){if(!e.repeat&&OB.me)OB.me.jb=.15;OB.ctl.jump=true;e.preventDefault();}if(e.code==="KeyQ")OB.cam.yaw+=.3;if(e.code==="KeyE")OB.cam.yaw-=.3;});
   addEventListener("keyup",e=>{if(K[e.code])OB.ctl.keys[K[e.code]]=false;if(e.code==="Space")OB.ctl.jump=false;});
