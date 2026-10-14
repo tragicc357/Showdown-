@@ -322,7 +322,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       </div>
     </header>
 
-    <button class="obhero" id="obBtn" type="button"><span class="obtag">NEW · 3D OBBY</span><b>Sleepover Obby</b><span>Race your friends live through 6 crazy obstacle courses. Win coins for hats, trails and dances!</span><em class="obplay">▶ TAP TO PLAY</em><i aria-hidden="true">🏃‍♀️</i></button>
+    <button class="obhero" id="obBtn" type="button"><span class="obtag">NEW · 3D OBBY</span><b>Sleepover Obby</b><span>Race your friends live through 7 obstacle courses. Win coins for hats, trails and dances!</span><em class="obplay">▶ TAP TO PLAY</em><i aria-hidden="true">🏃‍♀️</i></button>
 
     <div class="panel">
       <div class="me">
@@ -425,7 +425,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.2</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.3</p>
   </div>
 </section>
 
@@ -574,7 +574,7 @@ function encode(t0,mask,ob){const v=((Math.floor(t0/UNIT)%N)^MASK)>>>0;const d=[
 function decode(code,now){
   code=code.toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/O/g,"Q").replace(/I/g,"J").replace(/0/g,"Q").replace(/1/g,"J");
   if(code.length!==5&&code.length!==7)return null;const d=[...code].map(c=>ALPHA.indexOf(c));if(d.some(i=>i<0))return null;let pick=0,ob=null;
-  if(code.length===7){if((d[0]+3*d[1]+5*d[2]+7*d[3]+9*d[4]+11*d[5]+11)%32!==d[6])return null;const ci=(d[4]<<5)|d[5];if(ci>1000&&ci<1008)ob=ci-1001;else{pick=ci===1000?-1:COMBOS[ci];if(!pick)return null;}}
+  if(code.length===7){if((d[0]+3*d[1]+5*d[2]+7*d[3]+9*d[4]+11*d[5]+11)%32!==d[6])return null;const ci=(d[4]<<5)|d[5];if(ci>1000&&ci<1009)ob=ci-1001;else{pick=ci===1000?-1:COMBOS[ci];if(!pick)return null;}}
   else if((d[0]+3*d[1]+5*d[2]+7*d[3]+11)%32!==d[4])return null;
   const u=(((d[0]<<15)|(d[1]<<10)|(d[2]<<5)|d[3])^MASK)>>>0;const base=Math.floor(now/UNIT);let diff=((u-base)%N+N)%N;if(diff>N/2)diff-=N;
   return{t0:(base+diff)*UNIT,seed:u,code,pick,ob};
@@ -734,8 +734,8 @@ function award(id){if(S.st[id])return;S.st[id]=1;addTok(2);save();const s=STK.fi
 
 /* ---------- sound: everything is synthesized, no files ---------- */
 const A={ctx:null,sg:null,mg:null,nb:null};
-function ac(){if(A.ctx)return A.ctx;try{const c=new(window.AudioContext||window.webkitAudioContext)();A.ctx=c;A.sg=c.createGain();A.sg.gain.value=.9;A.sg.connect(c.destination);
-  A.mg=c.createGain();A.mg.gain.value=.7;A.mg.connect(c.destination);const cp=c.createDynamicsCompressor();cp.threshold.value=-16;cp.ratio.value=5;cp.attack.value=.004;cp.release.value=.16;cp.connect(A.mg);A.mb=c.createGain();A.mb.gain.value=.8;A.mb.connect(cp);A.dly=c.createDelay(1);A.dly.delayTime.value=.3;const fb=c.createGain();fb.gain.value=.3;A.dl=c.createGain();A.dl.gain.value=.28;A.dl.connect(A.dly);A.dly.connect(fb);fb.connect(A.dly);A.dly.connect(A.mb);{const ws=c.createWaveShaper(),cu=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/511.5-1;cu[i]=Math.tanh(x*3)/Math.tanh(3);}ws.curve=cu;ws.connect(A.mb);A.ws=ws;}const b=c.createBuffer(1,c.sampleRate,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.nb=b;}catch(e){}return A.ctx;}
+function ac(){if(A.ctx)return A.ctx;try{const c=new(window.AudioContext||window.webkitAudioContext)();A.ctx=c;const lim=c.createDynamicsCompressor();lim.threshold.value=-10;lim.knee.value=6;lim.ratio.value=14;lim.attack.value=.002;lim.release.value=.12;const out=c.createGain();out.gain.value=.85;lim.connect(out);out.connect(c.destination);A.lim=lim;A.sg=c.createGain();A.sg.gain.value=.6;A.sg.connect(lim);
+  A.mg=c.createGain();A.mg.gain.value=.5;A.mg.connect(A.lim);const cp=c.createDynamicsCompressor();cp.threshold.value=-16;cp.ratio.value=5;cp.attack.value=.004;cp.release.value=.16;cp.connect(A.mg);A.mb=c.createGain();A.mb.gain.value=.8;A.mb.connect(cp);A.dly=c.createDelay(1);A.dly.delayTime.value=.3;const fb=c.createGain();fb.gain.value=.3;A.dl=c.createGain();A.dl.gain.value=.28;A.dl.connect(A.dly);A.dly.connect(fb);fb.connect(A.dly);A.dly.connect(A.mb);{const ws=c.createWaveShaper(),cu=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/511.5-1;cu[i]=Math.tanh(x*1.6)/Math.tanh(1.6);}ws.curve=cu;ws.connect(A.mb);A.ws=ws;}const b=c.createBuffer(1,c.sampleRate,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.nb=b;}catch(e){}return A.ctx;}
 function tone(f,d,o){o=o||{};const mus=!!o.mus;if(mus?!S.music:!S.sfx)return;const c=ac();if(!c)return;try{const t=(o.t!=null?o.t:c.currentTime)+(o.at||0),os=c.createOscillator(),g=c.createGain(),v=o.v||.14;
   os.type=o.type||"triangle";os.frequency.setValueAtTime(f,t);if(o.to)os.frequency.exponentialRampToValueAtTime(o.to,t+d);
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+(o.a||.008));g.gain.exponentialRampToValueAtTime(.0001,t+d);
@@ -842,7 +842,7 @@ function music(){const c=A.ctx;if(!c||!S.music||c.state!=="running"||!A.mb)retur
   const tr=M.tr,bpm=tr.bpm*(M.fast?1.1:1),sl=60/bpm/4;A.dly.delayTime.value=Math.min(.9,sl*3);
   while(M.next<c.currentTime+.3){try{playStep(tr,M.step,M.next,sl);}catch(e){}M.next+=sl;M.step++;}}
 setInterval(music,90);
-function duck(on){if(!A.ctx||!A.mg)return;try{A.mg.gain.setTargetAtTime(on?(S.mstyle===4?.75:.38):.7,A.ctx.currentTime,.15);}catch(e){}}
+function duck(on){if(!A.ctx||!A.mg)return;try{A.mg.gain.setTargetAtTime(on?(S.mstyle===4?.55:.28):.5,A.ctx.currentTime,.15);}catch(e){}}
 
 /* ---------- softball chants: the iPad's own voice calls them over a stomp-and-clap beat, and the words pop up so everyone can chant along ---------- */
 /* each line: [words, beats, team answer?, clap beats]. Two Bits and Hey Batter are old traditional cheers; the rest are written for this game. {n} is the player's name */
@@ -1677,7 +1677,8 @@ function hangTables(c,W2,H2,fl,t){const fh=H2-fl,s=Math.min(W2*.2,fh*.4,110);HG.
     HG.tb.push({k,x:X-s*.85,y:Y-s*1.3,w:s*1.7,h:s*1.7});}}
 
 /* ================= SLEEPOVER OBBY · live 3D obstacle-course races (three.js, loaded on first use) ================= */
-const OBC=[{id:"house",n:"Sleepover House",e:"🛏️",tr:"fort",d:"Giant beds, pillow forts and a spinning ceiling fan"},{id:"stadium",n:"Softball Stadium",e:"🥎",tr:"field",d:"Dodge pitches, run the bleachers, slide into home"},{id:"beach",n:"Volleyball Beach",e:"🏐",tr:"gym",d:"Trampoline nets, sinking sand and a rising tide"},{id:"pool",n:"Pool Party",e:"🏊",tr:"pool",d:"Tippy pool toys, diving boards and a giant water slide"},{id:"candy",n:"Candy Land Dream",e:"🍭",tr:"lobby",d:"Crumbly cookies, gummy trampolines, lollipop spiral"},{id:"lava",n:"The Floor Is Lava",e:"🌋",tr:"final",d:"The hardest one. The lava keeps rising, so keep climbing!"},{id:"daily",n:"Daily Mix",e:"📅",tr:"field",d:"A brand new mixed-up course every day"}];
+const OBC=[{id:"house",n:"Sleepover House",e:"🛏️",tr:"fort",d:"Giant beds, pillow forts and a spinning ceiling fan"},{id:"stadium",n:"Softball Stadium",e:"🥎",tr:"field",d:"Dodge pitches, run the bleachers, slide into home"},{id:"beach",n:"Volleyball Beach",e:"🏐",tr:"gym",d:"Trampoline nets, sinking sand and a rising tide"},{id:"pool",n:"Pool Party",e:"🏊",tr:"pool",d:"Tippy pool toys, diving boards and a giant water slide"},{id:"candy",n:"Candy Land Dream",e:"🍭",tr:"lobby",d:"Crumbly cookies, gummy trampolines, lollipop spiral"},{id:"lava",n:"The Floor Is Lava",e:"🌋",tr:"final",d:"The hardest one. The lava keeps rising, so keep climbing!"},{id:"daily",n:"Daily Mix",e:"📅",tr:"field",d:"A brand new mixed-up course every day"},{id:"park",n:"Training Park",e:"🎈",tr:"lobby",d:"Start here! Learn to run and jump, race your friends and pop balloons for points"}];
+const OBORD=[7,0,1,2,3,4,5,6],obPrev=ci=>ci===0?7:ci>=1&&ci<=5?ci-1:-1,obNext=ci=>ci===7?0:ci<5?ci+1:-1;
 if(!S.ob||typeof S.ob!=="object")S.ob={};const SO=S.ob;["own","best","badge","gh"].forEach(k=>{if(!SO[k]||typeof SO[k]!=="object")SO[k]={};});
 if(!SO.eq||typeof SO.eq!=="object")SO.eq={hat:"",trail:"",glow:"",vd:"hop"};if(typeof SO.coins!=="number")SO.coins=0;
 const SHOP={hat:[["crown","Crown","👑",150],["cat","Cat Ears","🐱",80],["bunny","Bunny Ears","🐰",80],["prop","Propeller Cap","🚁",120],["halo","Halo","😇",200],["cowboy","Cowboy Hat","🤠",100],["party","Party Hat","🥳",60],["viking","Viking Helmet","🛡️",150],["chef","Chef Hat","🧑‍🍳",90],["uni","Unicorn Horn","🦄",180],["bow","Giant Bow","🎀",70],["shades","Cool Shades","😎",110]],
@@ -1690,7 +1691,7 @@ const owns=(cat,id)=>!!SO.own[cat+":"+id]||(SHOP[cat].find(i=>i[0]===id)||[])[3]
 const QCHAT=["Hi! 👋","Good luck!","Let's go!","GG!","So close!","Rematch?","😂","❤️"];
 const fmtT=ms=>{if(!(ms>=0))return"--";const s=ms/1000,m=Math.floor(s/60);return m+":"+(s%60).toFixed(1).padStart(4,"0");};
 const obCid=(ci,t)=>ci===6?"obd-"+(()=>{const d=new Date(t);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})():"ob-"+OBC[ci].id;
-const obUnlocked=ci=>ci===0||ci===6||!!SO.best["ob-"+OBC[ci-1].id];
+const obUnlocked=ci=>ci===7||ci===6||!!SO.best["ob-"+OBC[obPrev(ci)].id];
 
 /* ---------- themes: look, props and the order of obstacle sections ---------- */
 const THM={
@@ -1706,10 +1707,12 @@ const THM={
   L:[["crumble",1],["tramps",1],"cp",["spinner",2],["beams",1],"cp",["vanish",2],["pushers",2],"cp",["discs",2],["killpath",2],"cp",["spiral",1],["speedjump",2]]},
  lava:{sky:["#1a0508","#8a2414"],fog:"#4a1210",night:1,floor:["#ff5a1f","#ffb02e","lava"],c:["#5b4b4b","#7b6060","#6a5048","#8a6f5f","#4f4550"],cap:"#b08b78",pat:"cracks",kill:"#ff6a00",pad:"#ffb02e",haz:["#ff5a1f","#ffb02e","lava"],ball:"fireball",props:["rock","volcano","crystal","rock","crystal"],rise:{c:"#ff5a1f",sp:.24},
   L:[["hops",2],["movers",2],"cp",["crumble",2],["spinner",2],"cp",["elevator",1],["walljump",2],"cp",["discs",2],["vanish",2],"cp",["pitches",2],["conveyor",2],"cp",["truss",2],["zipline",2]]}};
+THM.park={sky:["#45aaff","#dff4ff"],fog:"#cfeeff",floor:["#4cc86a","#68d983","grass"],c:["#ff8fc8","#7fd0ff","#ffd84a","#9b8cff","#6fe3a8"],cap:"#ffffff",pat:"dots",kill:"#ff4f6d",pad:"#ffd23e",haz:["#4cc86a","#68d983","grass"],ball:"beachball",props:["lolli","beachball","gumdrop","umbrella","cupcake"],
+  L:[["tPath",0],["tHops",0],"cp",["tSteps",0],["tBounce",0],"cp",["tZoom",0],["tEnd",0]]};
 const SECPOOL=["steps","hops","killpath","movers","elevator","vanish","crumble","spinner","conveyor","jumppads","tramps","walljump","zipline","truss","speedjump","beams","discs","pushers","pitches"];
 
 /* ---------- three.js plumbing ---------- */
-const OB={on:false,mode:"menu",ci:0,W:null,me:null,av:null,rem:{},race:null,cam:{yaw:0,pitch:.34,dist:9,tx:0,ty:2,tz:0},ctl:{jx:0,jy:0,keys:{},jump:false},raf:0,last:0,tab:"play",cat:"hat",lbCi:0,ghost:true,emo:null,chat:null,tr:[],trSeen:{},cool:{},tgt:null,parts:[],hudAt:0,netBusy:false,infoAt:0,postAt:0,pollAt:0,lead:30,sel:new Set(),msg:null};
+const OB={on:false,mode:"menu",ci:SO.best["ob-park"]?0:7,W:null,me:null,av:null,rem:{},race:null,cam:{yaw:0,pitch:.34,dist:9,tx:0,ty:2,tz:0},ctl:{jx:0,jy:0,keys:{},jump:false},raf:0,last:0,tab:"play",cat:"hat",lbCi:0,ghost:true,emo:null,chat:null,tr:[],trSeen:{},cool:{},tgt:null,parts:[],hudAt:0,netBusy:false,infoAt:0,postAt:0,pollAt:0,lead:30,sel:new Set(),msg:null};
 let R3=null,GBOX,GSPH,GCYL,GCONE,GTOR,GCOIN;
 function obLoad(){if(window.THREE)return Promise.resolve();if(OB.loading)return OB.loading;OB.loading=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";s.onload=()=>window.THREE?res():rej();s.onerror=()=>{OB.loading=null;rej();};document.head.appendChild(s);});return OB.loading;}
 const MC={};
@@ -1846,7 +1849,7 @@ function avTrail(A,x,y,z,t,moving){const k=A.eq.trail;if(!k||!moving)return;A.tt
 
 /* ---------- course builder: every course is built from the same seed on every device, so all moving parts line up ---------- */
 function obBuild(ci,dayT){const daily=ci===6,dk=daily?Math.floor(dayT/86400000):0,rng=rngFrom(daily?dk*7919+13:1000+ci*77),tk=daily?OBC[Math.floor(rng()*6)].id:OBC[ci].id,T=THM[tk];
-  const W={ci,tk,T,root:new THREE.Group(),cols:[],coins:[],bars:[],balls:[],zips:[],trig:[],cps:[],anim:[],geos:[],rng,k:0,minY:0,maxY:0,bananas:[]};
+  const W={ci,tk,T,root:new THREE.Group(),cols:[],coins:[],bars:[],balls:[],zips:[],trig:[],cps:[],balloons:[],anim:[],geos:[],rng,k:0,minY:0,maxY:0,bananas:[]};
   const r=(a,b)=>a+(b-a)*rng(),col=()=>T.c[(W.k++)%T.c.length];
   const B={W,T,r,rng,col,
     mesh(geo,mt,x,y,z,sx,sy,sz,par){const m=new THREE.Mesh(geo,mt);m.position.set(x,y,z);if(sx!=null)m.scale.set(sx,sy,sz);(par||W.root).add(m);return m;},
@@ -1864,6 +1867,12 @@ function obBuild(ci,dayT){const daily=ci===6,dk=daily?Math.floor(dayT/86400000):
       B.mesh(GBOX,W.killMat,x,top-h/2,zc,w,h,d);W.cols.push(C);return C;},
     trig(x,top,z0,w,d,o){const C=Object.assign({k:"box",bmn:[x-w/2,top,z0],bmx:[x+w/2,top+.5,z0+d],solid:false,o:[0,0,0],po:[0,0,0]},o);C.mn=C.bmn.slice();C.mx=C.bmx.slice();W.cols.push(C);
       if(o.speed){const m=B.mesh(new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:patTex("chev","#ff4fd8","#fff36b"),transparent:true}),x,top+.02,z0+d/2);W.geos.push(m.geometry);}return C;},
+    balloon(x,y,z){const g=new THREE.Group(),col=["#ff4f7b","#ffd23e","#3fe0c8","#a77bff","#ff8a2a","#4fa3ff"][W.balloons.length%6];g.position.set(x,y,z);W.root.add(g);
+      const b=new THREE.Mesh(GSPH,mat(col,{emissive:col,emissiveIntensity:.25}));b.scale.set(.85,1.05,.85);b.position.y=.25;g.add(b);const k=new THREE.Mesh(GCONE,mat(col));k.scale.set(.18,.16,.18);k.position.y=-.33;k.rotation.x=Math.PI;g.add(k);
+      const s=new THREE.Mesh(GCYL,mat("#ffffff"));s.scale.set(.025,.9,.025);s.position.y=-.85;g.add(s);const h=new THREE.Mesh(GSPH,mat("#ffffff",{emissive:"#ffffff"}));h.scale.set(.18,.26,.1);h.position.set(-.17,.45,.32);g.add(h);
+      W.balloons.push({p:[x,y,z],g,got:false,ph:W.balloons.length*1.3});},
+    sign(x,y,z,t){const c=cvs(1024,160),g=c.getContext("2d");let fs=64;g.font="900 "+fs+"px "+DISPLAY;while(g.measureText(t).width>900&&fs>30){fs-=2;g.font="900 "+fs+"px "+DISPLAY;}const w=Math.min(1000,g.measureText(t).width+80);g.fillStyle="rgba(21,20,58,.88)";g.beginPath();g.roundRect?g.roundRect(512-w/2,10,w,140,60):g.rect(512-w/2,10,w,140);g.fill();g.lineWidth=8;g.strokeStyle="#f6ff5c";g.stroke();
+      g.textAlign="center";g.textBaseline="middle";g.fillStyle="#fff8ef";g.fillText(t,512,84);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));s.scale.set(9,1.4,1);s.position.set(x,y,z);s.renderOrder=4;W.root.add(s);(W.signs||(W.signs=[])).push(s);},
     coin(x,y,z){const m=B.mesh(GCOIN,W.coinMat,x,y,z);W.coins.push({p:[x,y,z],m,got:false});},
     disc(x,y,cz,R,w){const C={k:"cyl",c:[x,cz],y0:y-1,y1:y,r:R,w,solid:true};const g=new THREE.Group();g.position.set(x,0,cz);W.root.add(g);C.g=g;
       B.mesh(GCYL,mat(col()),0,y-.56,0,R*2,1,R*2,g);const cg=new THREE.CylinderGeometry(R,R,.14,40);W.geos.push(cg);B.mesh(cg,new THREE.MeshLambertMaterial({map:patTex(T.pat,mix(col(),"#ffffff",.4),T.cap)}),0,y-.06,0,null,null,null,g);
@@ -1906,6 +1915,12 @@ function obBuild(ci,dayT){const daily=ci===6,dk=daily?Math.floor(dayT/86400000):
   return W;}
 /* ---------- the obstacle sections (c = where the last bit ended: centre x, top y, far edge z) ---------- */
 const SEC={
+ tPath(B,c){let{x,y,z}=c;z+=.6;B.pl(x,y,z,6,16);B.sign(x,y+3.4,z+2.5,"🕹️ Push the joystick to run!");for(let i=0;i<5;i++)B.balloon(x+(i%2?1.7:-1.7),y+1.2,z+4.5+i*2.4);B.coin(x,y+1,z+14.5);return{x,y,z:z+16};},
+ tHops(B,c){let{x,y,z}=c;B.sign(x,y+3.4,z-1.5,"⬆️ Tap JUMP to hop across the gaps!");for(let i=0;i<4;i++){z+=1.5;B.balloon(x,y+2.4,z-.75);B.pl(x,y,z,4.6,3.6);z+=3.6;}B.coin(x,y+1,z-1.8);return{x,y,z};},
+ tSteps(B,c){let{x,y,z}=c;B.sign(x,y+3.4,z+1,"🪜 Jump UP the steps!");for(let i=0;i<4;i++){z+=1.2;y+=1;B.pl(x,y,z,4.6,3.2);if(i%2)B.balloon(x,y+1.3,z+1.6);z+=3.2;}z+=1;B.pl(x,y,z,5,4);B.balloon(x-1.4,y+1.3,z+2);B.balloon(x+1.4,y+1.3,z+2);return{x,y,z:z+4};},
+ tBounce(B,c){let{x,y,z}=c;z+=1.4;B.pl(x,y,z,4.6,4.6,{pad:19});padDeco(B,x,y,z+2.3);B.sign(x,y+4.2,z+.6,"🌟 Bounce pads launch you HIGH!");for(let i=0;i<3;i++)B.balloon(x,y+3+i*1.4,z+3.2+i*1.2);z+=4.6+2.2;y+=4;B.pl(x,y,z,5,5);B.coin(x,y+1,z+2.5);return{x,y,z:z+5};},
+ tZoom(B,c){let{x,y,z}=c;z+=1.5;B.pl(x,y,z,5,10);B.trig(x,y,z+2.4,5,2.2,{speed:1});B.sign(x,y+3.4,z+1.2,"⚡ Speed pad! Run over it, then JUMP!");z+=10;const g=5.6;for(let i=0;i<3;i++)B.balloon(x,y+2.2,z+1+i*1.8);z+=g;B.pl(x,y,z,5.5,5);return{x,y,z:z+5};},
+ tEnd(B,c){let{x,y,z}=c;z+=1.2;B.pl(x,y,z,6,8);B.sign(x,y+3.4,z+2,"🏁 Run to the FINISH! Beat your friends!");for(let i=0;i<4;i++)B.balloon(x+(i%2?1.8:-1.8),y+1.2,z+3.5+i*1.2);return{x,y,z:z+8};},
  steps(B,c,d){let{x,y,z}=c;for(let i=0;i<5;i++){z+=1.4+d*.5;y+=1.2;x=c.x+(i?B.r(-1,1)*d:0);B.pl(x,y,z,4.2-d*.6,3);if(i%2)B.coin(x,y+1,z+1.5);z+=3;}return{x,y,z};},
  hops(B,c,d){let{x,y,z}=c;const s=3.2-d*.45;for(let i=0;i<5;i++){z+=2.4+d*.6;y+=i===4?0:B.r(-.5,.5);x=c.x+B.r(-2,2);B.pl(x,y,z,s,s);if(i%2)B.coin(x,y+1.1,z+s/2);z+=s;}z+=2;B.pl(c.x,y,z,4.5,3.5);return{x:c.x,y,z:z+3.5};},
  killpath(B,c,d){let{x,y,z}=c;z+=2;const L=23,w=d>1?3.8:5;B.pl(x,y,z,w,L);for(let i=0;i<3;i++){const kz=z+4+i*6.8,side=i===1?-1:1;
@@ -2018,6 +2033,7 @@ function obStep(P,dt,t,input){const W=OB.W,near=OB.near;
   for(let i=W.bananas.length-1;i>=0;i--){const b=W.bananas[i];if(Math.hypot(P.x-b.x,P.z-b.z)<.95&&Math.abs(P.y-b.y)<1.1){P.slipT=1;P.stun=.9;P.vx=-Math.sin(P.face)*7;P.vz=-Math.cos(P.face)*7;P.vy=5;P.gnd=null;sfx.bad();obNote("🍌 You slipped on a banana!");W.root.remove(b.m);W.bananas.splice(i,1);}}
   if(!P.zip&&P.zipCd<=0)for(const Z of W.zips){const hx=P.x-Z.a[0],hz=P.z-Z.a[2];if(Z.slide?Math.hypot(hx,hz)<1.6&&Math.abs(P.y-Z.a[1])<1.2:Math.hypot(hx,P.y+1.8-Z.a[1],hz)<1.9){P.zip={z:Z,u:0};P.vy=0;sfx.whoosh();break;}}
   for(const c of W.coins){if(c.got)continue;const dx=P.x-c.p[0],dy=P.y+.9-c.p[1],dz=P.z-c.p[2];if(dx*dx+dy*dy+dz*dz<1.7){c.got=true;c.m.visible=false;P.coins++;SO.coins++;sfx.coin();obBurst(c.p[0],c.p[1],c.p[2],4,{e:"✨",sz:.35});}}
+  for(const b of W.balloons){if(b.got)continue;const dx=P.x-b.p[0],dy=P.y+1-b.p[1],dz=P.z-b.p[2];if(dx*dx+dy*dy*.6+dz*dz<1.5){b.got=true;b.g.visible=false;P.pops=(P.pops||0)+1;SO.coins++;sfx.pop();setTimeout(()=>sfx.coin(),60);obBurst(b.p[0],b.p[1]+.3,b.p[2],10,{e:"🎉",sz:.4});obBurst(b.p[0],b.p[1]+.3,b.p[2],8,{c:"#ffffff",sz:.3});obNote("🎈 POP! +10 points");}}
   if(P.y<W.killY||P.y<P.spawn[1]-18)obDie(P);
   if(W.T.rise&&OB.mode==="race"&&t>0&&!P.fin){P.lvl=P.spawn[1]-6+Math.max(0,t-P.lvlT-2)*W.T.rise.sp;if(P.y<P.lvl-.2)obDie(P);}}
 function obDie(P){if(P.dead>0)return;P.dead=.9;P.falls++;P.vx=P.vy=P.vz=0;P.zip=null;P.boost=0;obBurst(P.x,P.y+1,P.z,14,{c:"#ffffff",sz:.6});sfx.bad();P.hidden=true;OB.camShake=.3;}
@@ -2034,6 +2050,8 @@ function obWorldTick(t,dt){const W=OB.W,now=performance.now();
     if(C.flipT!==undefined){const on=t<C.flipT;C.g.rotation.z=on?Math.min(1,(C.flipT-t)*3)*Math.PI*.5:0;}
     if(C.k==="cyl"&&C.w&&C.g)C.g.rotation.y=C.w*t;if(C.tex)C.tex.offset.y=-(t*.6)%1;if(C.gate){C.g.visible=t<0;}if(C.flag)C.flag.rotation.y=Math.sin(t*3+C.cp)*.25;}
   for(const b of W.bars)b.g.rotation.y=b.ph+b.w*t;for(const b of W.balls){const p=b.fn(t);b.m.position.set(p[0],p[1],p[2]);b.m.rotation.x=t*6;}
+  if(W.signs&&OB.me){const pz=OB.me.z;for(const s of W.signs){const d=s.position.z-pz;const a=d<-3?0:d>24?0:d>16?(24-d)/8:1;s.material.opacity=a;s.visible=a>0.02;}}
+  for(const b of W.balloons)if(!b.got){b.g.position.y=b.p[1]+Math.sin(t*2+b.ph)*.18;b.g.rotation.z=Math.sin(t*1.3+b.ph)*.12;}
   for(const c of W.coins)if(!c.got){c.m.rotation.y=t*3;c.m.position.y=c.p[1]+Math.sin(t*3+c.p[2])*.12;}
   W.killMat.emissiveIntensity=.3+.25*Math.sin(t*5);if(W.T.floor[2]==="lava"||W.T.floor[2]==="waves"){const m=W.floor.material.map;m.offset.x=(t*.02)%1;}}
 function obFrame(now){if(!OB.on)return;if($("obby").hidden){OB.on=false;obLeaveNet();OB.race=null;return;}OB.raf=requestAnimationFrame(obFrame);const dt=Math.min(.05,Math.max(0,(now-OB.last)/1000));OB.last=now;const W=OB.W;if(!W||!R3)return;
@@ -2076,7 +2094,7 @@ async function obOpen(then){show("obby");$("obLoad").hidden=false;$("obLoad").te
   $("obLoad").hidden=true;obInit();OB.on=true;OB.me=OB.me||mkP();if(!OB.W)obSetWorld(OB.ci);obRebuildMe();obResize();setTrack(OBC[OB.ci].tr,"full");
   if(then)then();else obMenu();cancelAnimationFrame(OB.raf);OB.last=performance.now();OB.raf=requestAnimationFrame(obFrame);if(ONLINE){heartbeat();pollLobby();}}
 function obMenu(){obLeaveNet();OB.race=null;OB.mode="menu";OB.emo=null;OB.tgt=null;OB.ghostAv&&avDrop(OB.ghostAv);OB.ghostAv=null;for(const id in OB.rem)avDrop(OB.rem[id].A);OB.rem={};
-  if(!OB.W||OB.W.ci!==OB.ci||OB.ci===6)obSetWorld(OB.ci);obPlace(OB.me,0,0,1.5);OB.me.face=Math.PI;for(const c of OB.W.coins){c.got=false;c.m.visible=true;}
+  if(!OB.W||OB.W.ci!==OB.ci||OB.ci===6)obSetWorld(OB.ci);obPlace(OB.me,0,0,1.5);OB.me.face=Math.PI;for(const c of OB.W.coins){c.got=false;c.m.visible=true;}for(const b of OB.W.balloons){b.got=false;b.g.visible=true;}
   setTrack(OBC[OB.ci].tr,"full");obUI();obMenuRender();$("obMenu").scrollTop=0;}
 function obClose(){obLeaveNet();OB.race=null;OB.on=false;cancelAnimationFrame(OB.raf);for(const id in OB.rem)avDrop(OB.rem[id].A);OB.rem={};save();show("lobby");if(ONLINE){heartbeat();pollLobby();}}
 
@@ -2089,14 +2107,14 @@ async function obSubmit(r,gh){const cid=r.cid,s=Math.max(1,5000-Math.round(r.ft/
     r.wrList=await obTop(cid,true);r.isWR=r.newWorldBest&&r.wrank===1&&(!r.wr0||r.ft<r.wr0.ms||r.wr0.id===S.pid);
     if(r.isWR&&OB.race===r){obBig("WORLD RECORD!",2);confetti(160);sfx.levelup();}}catch(e){r.wrErr=true;}
   r.wait=false;if(OB.race===r&&OB.mode==="results")obResRender();}
-function obStart(o){const ci=o.ci,t0=o.t0;OB.ci=ci;obSetWorld(ci,t0);for(const c of OB.W.coins){c.got=false;c.m.visible=true;}for(const C of OB.W.cols){C.cs=0;delete C.flipT;}
+function obStart(o){const ci=o.ci,t0=o.t0;OB.ci=ci;obSetWorld(ci,t0);for(const c of OB.W.coins){c.got=false;c.m.visible=true;}for(const b of OB.W.balloons){b.got=false;b.g.visible=true;}for(const C of OB.W.cols){C.cs=0;delete C.flipT;}
   const h=[...S.pid].reduce((a,ch)=>a*31+ch.charCodeAt(0)>>>0,7),sx=((h%9)-4)*1.1,sz=-5+(h>>4)%5;obPlace(OB.me,o.party?sx:0,0,o.party?sz:-2);OB.me.face=0;OB.cam.yaw=0;OB.cam.tx=OB.me.x;OB.cam.ty=0;OB.cam.tz=OB.me.z;
   OB.race={party:!!o.party,code:o.code||"",t0,ci,cid:obCid(ci,t0),key:o.party?"OB"+o.code+"-"+Math.floor(t0/86400000):null,end:0,res:null,coins0:SO.coins,bonus:0,told:{}};
   OB.mode="race";OB.emo=null;OB.chat=null;OB.tr=[];OB.trSeen={};OB.cool={};OB.tgt=null;OB.gTrack=[];OB.gRec=0;OB.lastBig=null;
   if(OB.ghostAv){avDrop(OB.ghostAv);OB.ghostAv=null;}OB.gh=null;const gsrc=o.ghost||(!o.party&&OB.ghost&&SO.gh[OB.race.cid]?{n:"Your best",d:SO.gh[OB.race.cid]}:null);
   if(gsrc&&typeof gsrc.d==="string"){const d=gsrc.d.split("|").map(s=>s.split(",").map(Number)).filter(a=>a.length===4&&a.every(isFinite));if(d.length>5){OB.gh={d,n:gsrc.n};OB.ghostAv=mkAv(gsrc.ch||S.ch,{},{ghost:true,name:"👻 "+gsrc.n});}}
   setTrack(OBC[ci].tr,"full");obUI();if(ONLINE){const rr=OB.race;obTop(rr.cid).then(l=>{rr.wr0=l[0]||null;}).catch(()=>{});}if(o.party){obPostInfo();obNetTick(performance.now(),obT(),true);}if(ONLINE)heartbeat();}
-function obSolo(ghost){if(!obUnlocked(OB.ci)){obNote("Finish "+OBC[OB.ci-1].n+" first to unlock this course!");sfx.bad();return;}sfx.great();obStart({ci:OB.ci,t0:clock()+3600,ghost});}
+function obSolo(ghost){if(!obUnlocked(OB.ci)){obNote("Finish "+OBC[obPrev(OB.ci)].n+" first to unlock this course!");sfx.bad();return;}sfx.great();obStart({ci:OB.ci,t0:clock()+3600,ghost});}
 function obHost(){const t0=Math.ceil((clock()+OB.lead*1000)/UNIT)*UNIT,code=encode(t0,0,OB.ci);obStart({ci:OB.ci,t0,party:true,code});for(const id of OB.sel)obInvite(id,code);OB.invited=new Set(OB.sel);OB.sel.clear();sfx.great();}
 function obInvite(id,code){if(!ONLINE)return;api("PATCH","lobby/"+id,{inv:{f:cleanName(myName()),c:code}}).catch(()=>{});}
 function obJoinCode(p){const now=clock();if(now-p.t0>5*60000){obNote("That race is already over. Ask your friend to start a new one.");sfx.bad();return false;}
@@ -2107,10 +2125,10 @@ function obFinish(P){const r=OB.race;if(!r||P.fin)return;const t=obT();if(t<0)re
   const news=[];let bonus=20;const cid=r.cid,pb=SO.best[cid];
   if(!(pb<=r.ft)){SO.best[cid]=r.ft;const gh=OB.gTrack.slice(0,3000).join("|");SO.gh[cid]=gh;if(pb)news.push("New personal best! (was "+fmtT(pb)+")");bonus+=10;
     
-    if(!pb&&r.ci<5&&!SO.best["ob-"+OBC[r.ci+1].id])news.push("New course unlocked: "+OBC[r.ci+1].e+" "+OBC[r.ci+1].n+"!");}
+    {const nx=obNext(r.ci);if(!pb&&nx>=0&&!SO.best["ob-"+OBC[nx].id])news.push("New course unlocked: "+OBC[nx].e+" "+OBC[nx].n+"!");}}
   if(P.falls===0&&!SO.badge[r.ci===6?"daily":cid]){SO.badge[r.ci===6?"daily":cid]=1;bonus+=40;news.push("⭐ No-fall badge earned! +40 coins");}
   if(r.ci===6&&SO.dailyDone!==todayKey()){SO.dailyDone=todayKey();bonus+=30;news.push("Daily course done! +30 coins");}
-  if(ONLINE&&r.ft<499000)obSubmit(r,OB.gTrack.slice(0,3000).join("|"));r.bonus=bonus;SO.coins+=bonus;S.xp+=40+P.coins;addTok(2);S.plays++;r.news=news;save();
+  if(ONLINE&&r.ft<499000)obSubmit(r,OB.gTrack.slice(0,3000).join("|"));if(OB.W.balloons.length)news.unshift("🎈 Popped "+(P.pops||0)+" of "+OB.W.balloons.length+" balloons · "+(P.pops||0)*10+" points");r.bonus=bonus;SO.coins+=bonus;S.xp+=40+P.coins;addTok(2);S.plays++;r.news=news;save();
   if(r.party)obNetTick(performance.now(),t,true);else setTimeout(()=>{if(OB.race===r)obResults();},1400);}
 function obResults(){const r=OB.race;if(!r||OB.mode==="results")return;OB.mode="results";OB.emo=null;const P=OB.me,rows=obStandings();r.res=rows;
   const W=OB.W,me=rows.findIndex(e=>e.me);if(r.party&&me>=0&&P.fin){const pb=[30,20,10][me]||0;if(pb){SO.coins+=pb;r.bonus+=pb;r.news.unshift((["🥇 1st","🥈 2nd","🥉 3rd"][me])+" place! +"+pb+" coins");}save();}
@@ -2178,7 +2196,7 @@ let obNoteT=0;function obNote(t){const e=$("obNote");e.textContent=t;clearTimeou
 function obUI(){const m=OB.mode,r=OB.race,party=!!(r&&r.party);$("obMenu").hidden=m!=="menu";$("obRes").hidden=m!=="results";$("obCtl").hidden=m!=="race";$("obStat").hidden=m!=="race";$("obPlaceBox").hidden=!(m==="race"&&party);$("obProg").hidden=!(m==="race"&&party);
   $("obEmoBtn").hidden=m==="menu";$("obEmo").hidden=true;$("obWait").hidden=true;$("obTroll").hidden=true;$("obBig").textContent="";$("obBack").setAttribute("aria-label",m==="menu"?"Back to home":"Leave the race");OB.lastCount=null;OB.waitAt=0;}
 function obHud(t){const P=OB.me,r=OB.race,W=OB.W;$("obCoins").textContent="🪙 "+SO.coins;if(OB.mode!=="race"||!r)return;
-  $("obTime").textContent=fmtT(P.fin?r.ft:Math.max(0,t*1000));$("obCp").textContent="Checkpoint "+P.cp+"/"+W.cps.length+(P.falls?" · "+P.falls+" fall"+(P.falls>1?"s":""):"")+(r.wr0?" · 🌍 "+fmtT(r.wr0.ms):"");
+  $("obTime").textContent=fmtT(P.fin?r.ft:Math.max(0,t*1000));$("obCp").textContent="Checkpoint "+P.cp+"/"+W.cps.length+(P.falls?" · "+P.falls+" fall"+(P.falls>1?"s":""):"")+(W.balloons.length?" · 🎈 "+(P.pops||0)*10+" pts":"")+(r.wr0?" · 🌍 "+fmtT(r.wr0.ms):"");
   if(t<0&&t>-3.2){const n=Math.ceil(-t);if(OB.lastCount!==n){OB.lastCount=n;obBig(String(n));sfx.tick();}}
   else if(t>=0&&OB.lastCount!=null&&OB.lastCount!=="go"){OB.lastCount="go";obBig("GO!");sfx.whistle();if(W.T.rise)setTimeout(()=>obNote(W.tk==="lava"?"🌋 The lava is rising! Keep climbing!":"🌊 The tide is coming in! Keep moving!"),1200);}
   const ctl=$("obStick").parentElement;ctl.classList.toggle("done",!!(P.fin&&r.party));
@@ -2201,8 +2219,8 @@ function obMenuRender(){const m=$("obMenu");m.textContent="";const tabs=oel("div
   if(OB.tab==="play")obPlayRender(m);else if(OB.tab==="shop")obShopRender(m);else obRecRender(m);}
 function obPlayRender(m){const C=OBC[OB.ci],un=obUnlocked(OB.ci),cid=obCid(OB.ci,clock());
   const hd=oel("div","obhead",null,m);oel("b",null,C.e+" "+C.n,hd);oel("small",null,C.d,hd);
-  const g=oel("div","obcs",null,m);if(ONLINE)setTimeout(obCardWR,0);OBC.forEach((c,i)=>{const u=obUnlocked(i),b=obtn("","obc",()=>{if(OB.ci===i)return;OB.ci=i;sfx.tap();obMenu();},g);b.setAttribute("aria-pressed",OB.ci===i);if(!u)b.classList.add("lock");
-    oel("span","e",u?c.e:"🔒",b);oel("b",null,c.n,b);const bk=obCid(i,clock()),best=SO.best[bk];oel("small",null,!u?"Finish "+OBC[i-1].n:best?"Best "+fmtT(best)+(SO.badge[i===6?"daily":bk]?" ⭐":""):i===6?"New every day":"Not finished yet",b);const wr=oel("small","obwr",null,b);wr.dataset.cid=bk;});
+  const g=oel("div","obcs",null,m);if(ONLINE)setTimeout(obCardWR,0);OBORD.forEach(i=>{const c=OBC[i],u=obUnlocked(i),b=obtn("","obc",()=>{if(OB.ci===i)return;OB.ci=i;sfx.tap();obMenu();},g);b.setAttribute("aria-pressed",OB.ci===i);if(!u)b.classList.add("lock");
+    oel("span","e",u?c.e:"🔒",b);oel("b",null,c.n,b);const bk=obCid(i,clock()),best=SO.best[bk];oel("small",null,!u?"Finish "+OBC[obPrev(i)].n:best?"Best "+fmtT(best)+(SO.badge[i===6?"daily":bk]?" ⭐":""):i===6?"New every day":"Not finished yet",b);const wr=oel("small","obwr",null,b);wr.dataset.cid=bk;});
   const row=oel("div","row",null,m);const go=obtn(un?"▶ Race solo":"🔒 Locked","go",()=>obSolo(),row);go.disabled=!un;
   if(SO.gh[cid]&&un){const gb=obtn("👻 Ghost: "+(OB.ghost?"On":"Off"),"",()=>{OB.ghost=!OB.ghost;sfx.tap();obMenuRender();},row);gb.style.flex="0 0 auto";gb.setAttribute("aria-pressed",OB.ghost);}
   if(!ONLINE){oel("p","dim","Racing friends live needs the online version of the game.",m);return;}
@@ -2226,7 +2244,7 @@ function obShopRender(m){oel("p","dim","Earn coins by grabbing them on courses, 
       if(cat!=="emote")SO.eq[cat]=id;save();if(cat==="hat"||cat==="glow"||cat==="trail")obRebuildMe();if(cat==="trail")OB.preview="run";obMenuRender();},g);
     const ic=oel("span","e",cat==="glow"?"":e,b);if(cat==="glow"){ic.className="e dot";ic.style.background=e==="rainbow"?"conic-gradient(#ff5f5f,#ffd23e,#3fe0c8,#3f8cff,#a77bff,#ff5f5f)":e;}
     oel("b",null,n,b);oel("small",null,on?"Wearing":own?(cat==="emote"?"Owned · tap to try":"Owned · tap to wear"):"🪙 "+price,b);});}
-async function obRecRender(m){const ch=oel("div","chips",null,m);OBC.forEach((c,i)=>{const b=obtn(c.e+" "+c.n,"",()=>{OB.lbCi=i;sfx.tap();obMenuRender();},ch);b.setAttribute("aria-pressed",OB.lbCi===i);});
+async function obRecRender(m){const ch=oel("div","chips",null,m);OBORD.forEach(i=>{const c=OBC[i],b=obtn(c.e+" "+c.n,"",()=>{OB.lbCi=i;sfx.tap();obMenuRender();},ch);b.setAttribute("aria-pressed",OB.lbCi===i);});
   const cid=obCid(OB.lbCi,clock()),mine=SO.best[cid];oel("p","obh",(mine?"Your best: "+fmtT(mine):"You haven't finished this one yet.")+(SO.badge[OB.lbCi===6?"daily":cid]?" ⭐ No-fall badge":""),m);
   if(!ONLINE){oel("p","dim","World records need the online version of the game.",m);return;}
   const ul=oel("ol","oblist obrec",null,m);oel("li","dim","Loading world records…",ul);
@@ -2244,7 +2262,7 @@ function obResRender(){const w=$("obRes"),r=OB.race,rows=r.res||obStandings(),P=
     const ul=oel("ol","oblist obrec",null,wb);(r.wrList||[]).slice(0,3).forEach((e,i)=>{const li=oel("li",e.id===S.pid?"me":null,null,ul);oel("b",null,["🥇","🥈","🥉"][i],li);oel("span",null,e.n+(e.id===S.pid?" (you)":""),li);oel("b",null,fmtT(e.ms),li);});}}
   const row=oel("div","row",null,w);
   if(r.party){obtn("🔁 Race again","go",()=>{OB.sel=new Set(rows.filter(e=>!e.me).map(e=>e.id));obHost();},row);}else{obtn("🔁 Try again","go",()=>obStart({ci:r.ci,t0:clock()+3600,ghost:OB.gh?{n:OB.gh.n,d:OB.gh.d.map(a=>a.join(",")).join("|")}:null}),row);
-    const nx=r.ci<5&&obUnlocked(r.ci+1)?r.ci+1:-1;if(nx>=0)obtn("Next: "+OBC[nx].e+" "+OBC[nx].n,"teal",()=>{OB.ci=nx;obMenu();},row);}
+    const nx=obNext(r.ci)>=0&&obUnlocked(obNext(r.ci))?obNext(r.ci):-1;if(nx>=0)obtn("Next: "+OBC[nx].e+" "+OBC[nx].n,"teal",()=>{OB.ci=nx;obMenu();},row);}
   obtn("Menu","",()=>obMenu(),row);if(r.party)obChatRow(w);}
 
 /* ---------- controls: floating joystick on the left, camera drag on the right, jump button; keyboard too ---------- */
