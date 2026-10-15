@@ -425,7 +425,7 @@ input:focus-visible{box-shadow:0 0 22px rgba(226,247,59,.35)}
       <p class="dim">Every party plays five of these twelve: the host picks them, or it's a surprise mix. The last round is the Golden Round, worth double.</p>
       <div class="games" id="lineup"></div>
     </div>
-    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.3</p>
+    <p class="dim" id="verOut" style="text-align:center;font-size:.8rem">Version 3.3.1</p>
   </div>
 </section>
 
@@ -1691,7 +1691,7 @@ const owns=(cat,id)=>!!SO.own[cat+":"+id]||(SHOP[cat].find(i=>i[0]===id)||[])[3]
 const QCHAT=["Hi! 👋","Good luck!","Let's go!","GG!","So close!","Rematch?","😂","❤️"];
 const fmtT=ms=>{if(!(ms>=0))return"--";const s=ms/1000,m=Math.floor(s/60);return m+":"+(s%60).toFixed(1).padStart(4,"0");};
 const obCid=(ci,t)=>ci===6?"obd-"+(()=>{const d=new Date(t);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();})():"ob-"+OBC[ci].id;
-const obUnlocked=ci=>ci===7||ci===6||!!SO.best["ob-"+OBC[obPrev(ci)].id];
+const obUnlocked=ci=>ci===7||ci===6||!!SO.best["ob-"+OBC[ci].id]||!!SO.best["ob-"+OBC[obPrev(ci)].id];
 
 /* ---------- themes: look, props and the order of obstacle sections ---------- */
 const THM={
